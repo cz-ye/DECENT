@@ -1,0 +1,230 @@
+#' Fitting DE model using EM algorithm
+#'
+#' Fit the DECENT model with DE assumption
+#'
+#' @param data.obs Observed count matrix for endogeneous genes, rows represent genes, columns represent cells
+#' @param spike Observed count matrix for spike-ins, rows represent spike-in molecules, columns represent cells
+#' (ONLY if spikes = \code{TRUE}).
+#' @param spike.conc spike.conc A vector of theoretical count for each spike-in in one cell (ONLY if spikes = \code{TRUE}).
+#' @param CE.range A two-element vector of the lower limit and upper limit for the estimated
+#' capture efficiencies (ONLY if spikes = \code{FALSE}, default [0.02, 0.10]).
+#' @param cell.type A factor or a integer/numeric vector starting from 1 providing cell-type labels.
+#' @param use.spikes If \code{TRUE}, use spike-ins to estimate capture efficiencies.
+#' @param normalize Normalization method, either 'ML' (maximum likelihood) or 'TMM' (Robinson et al., 2010).
+#' @param GQ.approx If \code{TRUE}, use GQ approximation to speed up E-step.
+#' @param parallel If \code{TRUE}, run in parallel.
+#'
+#' @return A list of DE model estimates
+#' @examples
+#'
+#' @import MASS
+#' @import ZIM
+#' @import statmod
+#' @import edgeR
+#'
+#' @export
+fitDE <- function (data.obs, cell.type, spikes, spike.conc, CE.range, use.spikes, normalize,
+                   GQ.approx, maxit, parallel) {
+
+  if (class(cell.type) == 'factor') {
+    cell.type.names <- levels(cell.type)
+    cell.type <- as.numeric(cell.type)
+  } else {
+    cell.type.names <- NULL
+  }
+  ncell <- ncol(data.obs)
+  ngene <- nrow(data.obs)
+  ncelltype <- length(unique(cell.type))
+
+
+  # Get capture efficiency. Calculate with spike-ins, if available;
+  # If not, randomize and sort by libsize.
+  if (use.spikes) {
+    capeff.spike <- apply(spikes, 2, sum)/sum(spike.conc)
+    DO.coef <- matrix(0, ncell, 2)
+    DO.coef[,1] <- log(capeff.spike/(1-capeff.spike))
+    CE <- capeff.spike
+  } else {
+    rand.CE <- sort(runif(ncell, 0.05, 0.20))
+    CE <- rep(0, ncell)
+    lib.size <- apply(data.obs, 2, sum, na.rm = T)
+    CE[order(lib.size, decreasing=FALSE)] <- rand.CE
+    DO.coef <- matrix(0, ncell, 2)
+    DO.coef[, 1] <- log(CE/(1-CE))
+  }
+
+  # Initialize size factor
+  data.obs.adj <- data.obs %*% diag(1/CE)
+  est.sf <- apply(data.obs.adj, 2, mean, trim = 0.025)
+  est.sf <- est.sf/mean(est.sf)
+
+  # Initialize other ZINB parameters
+  est.mu <- matrix(0, ngene, ncelltype)
+  for (K in 1:ncelltype) {
+    est.mu[, K] <- 2 + apply(data.obs[, cell.type == K], 1, quantile, prob = 0.9)
+  }
+  est.disp  <- rbeta(ngene, 0.1 ,0.6)
+  est.pi0   <- matrix(0, ngene, ncelltype)
+  est.pi0[, 1]   <-  rbeta(ngene, 3, 15)
+  for (K in 2:ncelltype) {
+     est.pi0[, K] <- est.pi0[, 1]
+  }
+  est.dmu <- rgamma(ngene, 5, 5)
+
+  # Initialize other variables
+  loglik.vec <- rep(0, maxit)
+  data.imp <- data.obs
+  PE <- matrix(0, ngene, ncell)
+  iter <- 1
+  converge <- FALSE
+  if (GQ.approx) gq <- gauss.quad(48, kind = 'legendre') else gq <- NULL
+
+  print(paste0('DE model fitting started at ', Sys.time()))
+  # Begin EM algorithm
+  for (iter in 1:maxit) {
+
+    # E-step gene by gene
+    if (parallel) {
+      if (!GQ.approx) {
+        temp <- foreach (i = 1:ngene, .combine = 'rbind', .packages = c('DECENT')) %dopar% {
+          out <- EstepByGene(par = DO.coef, z = data.obs[i, ], z.ind = data.obs[i, ] > 0, sf = est.sf,
+                              pi0 = est.pi0[i, cell.type], mu = est.mu[i, cell.type], disp = est.disp[i])
+          return(c(ifelse(is.na(out$EYZ0E1),data.obs[i, ],out$EYZ0E1), 1 - out$PE0Z0))
+        }
+      } else {
+        temp <- foreach (i = 1:ngene, .combine = 'rbind', .packages = c('MASS','ZIM', 'DECENT')) %dopar% {
+          out <- Estep2ByGene(par = DO.coef,z = data.obs[i, ], z.ind = data.obs[i, ]>0, sf = est.sf,
+                               pi0 = est.pi0[i, cell.type], mu = est.mu[i, cell.type], disp = est.disp[i], GQ.object = gq)
+          return(c(ifelse(is.na(out$EYZ0E1),data.obs[i, ],out$EYZ0E1), 1 - out$PE0Z0))
+        }
+      }
+      data.imp <- temp[, 1:ncell]
+      PE <- temp[, (ncell+1):(2*ncell)]
+
+    } else {
+      if (!GQ.approx) {
+        for (i in 1:ngene) {
+          # use E-step with expected value evaluated using GQ integral
+          out <- EstepByGene(par = DO.coef, z = data.obs[i, ], z.ind = data.obs[i, ] > 0, sf = est.sf,
+                             pi0 = est.pi0[i, cell.type], mu = est.mu[i, cell.type], disp = est.disp[i])
+          data.imp[i, ] <- ifelse(is.na(out$EYZ0E1),data.obs[i, ],out$EYZ0E1)
+          PE[i, ]<- 1 - out$PE0Z0
+        }
+      } else {
+        for (i in 1:ngene) {
+          out <- Estep2ByGene(par = DO.coef,z = data.obs[i, ], z.ind = data.obs[i, ]>0, sf = est.sf,
+                              pi0 = est.pi0[i, cell.type], mu = est.mu[i, cell.type], disp = est.disp[i], GQ.object = gq)
+          data.imp[i, ] <- ifelse(is.na(out$EYZ0E1), data.obs[i, ], out$EYZ0E1)
+          PE[i, ] <- 1 - out$PE0Z0
+        }
+      }
+    }
+
+    # M-step 1: Update SF
+    data.imp = as.matrix(data.imp)
+    data.imp2 = data.imp*PE
+
+    # M-step 2: Estimate SF by maximum-likelihood
+    if (normalize == 'ML') {
+      for (i in 1:ncell) {
+        p0 <- est.pi0[, cell.type[i]] +
+          (1 - est.pi0[, cell.type[i]])*dnbinom(0, mu = est.sf[i]*est.mu[, cell.type[i]], size = 1/est.disp)
+        w  <- ((p0 - est.pi0[, cell.type[i]]*(1-PE[, i]))*(1 - est.pi0[, cell.type[i]]))/p0
+        est.sf[i]  <- sum(data.imp2[, i], na.rm=T)/sum(w, na.rm=T)
+      }
+    } else if (normalize == 'TMM') {
+      tmm <- calcNormFactors(data.imp2)
+      est.sf <- colSums(data.imp2)*tmm
+    } else {
+      print('Normalization method should either be "ML" or "TMM"')
+    }
+    est.sf <- est.sf/mean(est.sf)
+
+    # M-step 3: Update pi_0, mu and phi, gene-by-gene
+    loglik <- rep(0, ngene)
+    if (parallel) {
+      temp <- foreach (i = 1:ngene, .combine = 'rbind', .packages = c('ZIM', 'DECENT')) %dopar% {
+        if (sum(data.imp[i, ])>sum(data.obs[i, ])) {
+          prop0 <- ifelse(est.pi0[i, 1] < 0.01,
+                          0.025, ifelse(est.pi0[i, 1] > 0.99, 0.975, est.pi0[i,1]))
+          out <- optim(par = c(log(prop0/(1-prop0)), log(mean(data.imp[i, ], na.rm=T)), rep(0, ncelltype-1), -2),
+                       fn = MstepNB, y = data.imp[i, ], sf = est.sf, status = PE[i, ], ct = cell.type, lower = -30)#,
+                       #gr = zinbGrad, method = 'L-BFGS-B')
+          new.pi0 <- rep(1/(1 + exp(-out$p[1])), ncelltype)
+          new.mu <- exp(out$p[2] + c(0, out$p[3:(ncelltype + 1)]))
+          new.disp <- exp(out$p[length(out$p)])
+          if(!GQ.approx){
+            new.loglik <- -loglI(p = out$p, sf = est.sf, ct = cell.type, DO.par = DO.coef, z = data.obs[i, ])
+          } else {
+            new.loglik <- -loglI2(p = out$p, sf = est.sf, ct = cell.type, DO.par = DO.coef, z = data.obs[i, ],
+                                    GQ.object = gq)
+          }
+          return(c(new.pi0, new.mu, new.disp, new.loglik))
+        } else {
+          return(c(est.pi0[i, ], est.mu[i, ], est.disp[i], loglik[i]))
+        }
+      }
+      est.pi0 <- temp[, 1:ncelltype]
+      est.mu <- temp[, (ncelltype+1):(2*ncelltype)]
+      est.disp <- temp[, 2*ncelltype+1]
+      loglik <- temp[, 2*ncelltype+2]
+
+    } else {
+      for (i in 1:ngene) {
+        if (sum(data.imp[i, ])>sum(data.obs[i, ])) {
+          prop0 <- ifelse(est.pi0[i, 1] < 0.01,
+                          0.025, ifelse(est.pi0[i, 1] > 0.99, 0.975, est.pi0[i,1]))
+          out <- optim(par = c(log(prop0/(1-prop0)), log(mean(data.imp[i, ], na.rm=T)), rep(0, ncelltype-1), -2),
+                       fn = MstepNB, y = data.imp[i, ], sf = est.sf, status = PE[i, ], ct = cell.type, lower = -30)#,
+                       #gr = zinbGrad, method = 'L-BFGS-B')
+          est.pi0[i, ] <- rep(1/(1 + exp(-out$p[1])), ncelltype)
+          est.mu[i, ]  <- exp(out$p[2] + c(0, out$p[3:(ncelltype + 1)]))
+          est.disp[i] <- exp(out$p[length(out$p)])
+          if (!GQ.approx) {
+            loglik[i] <- -loglI(p = out$p, sf = est.sf, ct = cell.type, DO.par = DO.coef, z = data.obs[i, ])
+          } else {
+            loglik[i] <- -loglI2(p = out$p, sf = est.sf, ct = cell.type, DO.par = DO.coef, z = data.obs[i, ],
+                                    GQ.object = gq)
+          }
+        }
+      }
+    }
+
+    loglik.vec[iter] <- sum(loglik)
+    print(paste0('EM iteration ', iter, ' finished at ', Sys.time(), '  Log-likelihood: ', loglik.vec[iter]))
+
+    if (iter > 5) {
+      if ( (loglik.vec[iter-1] - loglik.vec[iter])/loglik.vec[iter-1] < 1e-3 | iter == maxit ) converge <- TRUE
+    }
+
+    if (converge) {
+  # NOT CALCULATING SE
+      break
+    }
+  } # end of EM loop
+
+  print(paste0('DE Model fitting finished at ', Sys.time()))
+
+  # Output
+  rownames(est.mu) <- rownames(data.obs)
+  rownames(est.pi0) <- rownames(data.obs)
+  names(est.disp) <- rownames(data.obs)
+  names(est.sf) <- colnames(data.obs)
+
+  if (!is.null(cell.type.names)){
+    colnames(est.mu) <- cell.type.names
+    colnames(est.pi0) <- cell.type.names
+  }
+
+  output <- list()
+  output[['est.pi0']] <- est.pi0
+  output[['est.mu']] <- est.mu
+  output[['est.disp']] <- est.disp
+  output[['est.sf']] <- est.sf
+  #output[['var']] <- EM.var
+  output[['CE']] <- CE
+  output[['loglik']] <- loglik.vec[1:iter]
+  output[['GQ']] <- gq
+
+  return(output)
+}
