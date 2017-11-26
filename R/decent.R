@@ -46,7 +46,7 @@ decent <- function (data.obs, cell.type, spikes = NULL, spike.conc = NULL, CE.ra
   saveRDS(out.DE, paste0(dir, '/decent.DE.rds'))
 
   # Fit no-DE model
-  out.noDE <- fitNoDE(data.obs, CE = out.DE$CE, normalize, GQ.approx, maxit, parallel, n.cores)
+  out.noDE <- fitNoDE(data.obs, CE = out.DE$CE, normalize, GQ.approx, maxit, parallel)
   saveRDS(out.noDE, paste0(dir, '/decent.noDE.rds'))
 
   # Likelihood-ratio test
