@@ -4,7 +4,7 @@
 #'
 #' @docType data
 #'
-#' @format An list of five objects:
+#' @format A list containing five objects:
 #' \describe{
 #'   \item{\code{data.obs}}{
 #'     a numeric matrix with 1,000 genes and 200 cells: observed count matrix for endogeneous genes
@@ -22,5 +22,5 @@
 #'     a logical vector of length 1,000: whether the gene is actually DE or not.
 #'   }
 #' }
-#' 
+#'
 "sim"
