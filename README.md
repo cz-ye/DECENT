@@ -22,11 +22,11 @@ Here we use a simulated dataset for demonstration
 data("sim")
 
 # DECENT with spike-ins
-de.table <- decent(data.obs = data.obs, cell.type = cell.type, use.spikes = T, 
-                   spikes = ercc.obs, spike.conc = ercc.true)
+de.table <- decent(data.obs = sim$data.obs, cell.type = sim$cell.type, use.spikes = T, 
+                   spikes = sim$ercc.obs, spike.conc = sim$ercc.true)
 
 # DECENT without spike-ins
-de.table <- decent(data.obs = data.obs, cell.type = cell.type)
+de.table <- decent(data.obs = sim$data.obs, cell.type = sim$cell.type)
 
 # Ground truth can be found in the DE.gene vector.
 ```
