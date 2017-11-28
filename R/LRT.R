@@ -64,9 +64,9 @@ lrTest <- function(data.obs, out, out2, cell.type, parallel) {
       }
     }
     par1 <- temp[, 1:(2+ncelltype)]
-    par2 <- temp[, (2+ncelltype):(3+2*ncelltype)]
-    logl1 <- temp[, 4+2*ncelltype]
-    logl2 <- temp[, 5+2*ncelltype]
+    par2 <- temp[, (3+ncelltype):(ncol(temp)-2)]
+    logl1 <- temp[, ncol(temp)-1]
+    logl2 <- temp[, ncol(temp)]
 
   } else {
     for(i in 1:ngene) {
