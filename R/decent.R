@@ -28,6 +28,9 @@ decent <- function (data.obs, cell.type, spikes = NULL, spike.conc = NULL, CE.ra
                      use.spikes = FALSE, normalize = 'ML', GQ.approx = TRUE, maxit = 30,
                      parallel = T, n.cores = 0, imputed = F, dir = './') {
 
+  if (length(unique(cell.type)) != 2) stop('Number of groups (cell types) should be two.')
+  if (CE.range[1] < 0 | CE.range[1] > CE.range[2] | CE.range[2] > 1) stop('CE.range invalid.')
+
   if (parallel) {
     t.cores <- detectCores() - 1
     if (n.cores > 0 & n.cores < t.cores) {
