@@ -2,12 +2,14 @@
 #'
 #' Perform E-step for one gene, with GQ approximation
 #'
-#' @param par A vector of dropout model
-#' @param z A matrix, 1st col = obs count, 2nd,3rd row = DO par
-#' @param z.ind A binary indicator of (z == 0) in the original obs count (before imputation)
+#' @param par A matrix with two columns containing coefficient for the dropout model. The second column is currently unused
+#' and set to zero but may be used in the future to model droput rates dependence on gene-specific factors.
+#' @param z vector of observed count
+#' @param z.ind A binary indicator of (z>0) in the original obs count (before imputation)
 #' @param sf Size factors for different cells
-#' @param mu Mean parameter for gene i
-#' @param disp Reciprocal of size parameter for gene i
+#' @param pi0 gene-specific zero-inflated parameter
+#' @param mu gene-specific mean parameter
+#' @param disp Reciprocal of gene-specific size parameter for
 #' @param GQ.object Gauss-Legendre quadrature points and weights
 #'
 Estep2ByGene <- function(par, z, z.ind, sf, pi0, mu,disp, GQ.object) {

@@ -14,20 +14,20 @@ decent(data.obs, cell.type, spikes = NULL, spike.conc = NULL,
 
 \item{cell.type}{A factor or a integer/numeric vector starting from 1 providing cell-type labels.}
 
-\item{spike.conc}{A vector of theoretical count for each spike-in in one cell (ONLY if spikes = \code{TRUE}).}
+\item{spike.conc}{A vector of theoretical count for each spike-in in one cell (ONLY needed if spikes = \code{TRUE}).}
 
-\item{CE.range}{A two-element vector of the lower limit and upper limit for the estimated
-capture efficiencies (ONLY if spikes = \code{FALSE}, default [0.02, 0.10]).}
+\item{CE.range}{A two-element vector of the lower limit and upper limit for the estimated range of
+capture efficiencies (ONLY needed if spikes = \code{FALSE}, default [0.02, 0.10]).}
 
 \item{use.spikes}{If \code{TRUE}, use spike-ins to estimate capture efficiencies.}
 
-\item{normalize}{Normalization method, either 'ML' (maximum likelihood) or 'TMM' (Robinson et al., 2010).}
+\item{normalize}{Method for estimating size factors, either 'ML' (maximum likelihood, Ye et al., 2017) or 'TMM' (Robinson et al., 2010).}
 
-\item{GQ.approx}{If \code{TRUE}, use GQ approximation to speed up E-step.}
+\item{GQ.approx}{If \code{TRUE}, use Gaussian-Quadrature approximation to speed up E-step.}
 
 \item{parallel}{If \code{TRUE}, run DECENT in parallel.}
 
-\item{n.cores}{Number of CPU cores to use, default is all (ONLY if \code{TRUE}).}
+\item{n.cores}{Number of CPU cores to use, default is all (ONLY if parallel=\code{TRUE}).}
 
 \item{imputed}{If \code{TRUE}, include imputed data matrix in the output (Not available now).}
 
@@ -37,7 +37,7 @@ capture efficiencies (ONLY if spikes = \code{FALSE}, default [0.02, 0.10]).}
 (ONLY if spikes = \code{TRUE}).}
 }
 \value{
-A data frame containing the result of differential expression analysis.
+A list containing the result of differential expression analysis, with the following components: stat,pval,par.DE and par.noDE.
 }
 \description{
 Differential Expression with Capture Efficiency adjustmeNT

@@ -9,17 +9,17 @@ lrTest(data.obs, out, out2, cell.type, parallel)
 \arguments{
 \item{data.obs}{Observed count matrix for endogeneous genes, rows represent genes, columns represent cells}
 
-\item{out}{Output object from EM for DE model}
+\item{out}{Output of fitDE, it contains EM algorithm estimates for models with DE between cell-types.}
 
-\item{out2}{Output object from EM for no-DE model}
+\item{out2}{Output of fitNoDE, it contains EM algorithm estimates for models without DE between cell-types}
 
 \item{cell.type}{A factor or a integer/numeric vector starting from 1 giving cell-type labels}
 
 \item{parallel}{If \code{TRUE}, run in parallel}
 }
 \value{
-A list including statistics, p-values and parameters for likelihood-ratio test.
+A list containing statistics, p-values and parameter estimates for models with and without DE.
 }
 \description{
-Likelihood-ratio test
+Likelihood-ratio test for DE analysis of scRNA-seq data
 }

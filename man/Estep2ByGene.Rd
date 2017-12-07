@@ -7,17 +7,20 @@
 Estep2ByGene(par, z, z.ind, sf, pi0, mu, disp, GQ.object)
 }
 \arguments{
-\item{par}{A vector of dropout model}
+\item{par}{A matrix with two columns containing coefficient for the dropout model. The second column is currently unused
+and set to zero but may be used in the future to model droput rates dependence on gene-specific factors.}
 
-\item{z}{A matrix, 1st col = obs count, 2nd,3rd row = DO par}
+\item{z}{vector of observed count}
 
-\item{z.ind}{A binary indicator of (z == 0) in the original obs count (before imputation)}
+\item{z.ind}{A binary indicator of (z>0) in the original obs count (before imputation)}
 
 \item{sf}{Size factors for different cells}
 
-\item{mu}{Mean parameter for gene i}
+\item{pi0}{gene-specific zero-inflated parameter}
 
-\item{disp}{Reciprocal of size parameter for gene i}
+\item{mu}{gene-specific mean parameter}
+
+\item{disp}{Reciprocal of gene-specific size parameter for}
 
 \item{GQ.object}{Gauss-Legendre quadrature points and weights}
 }

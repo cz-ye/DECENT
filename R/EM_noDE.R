@@ -4,9 +4,10 @@
 #'
 #' @param data.obs Observed count matrix for endogeneous genes, rows represent genes, columns represent cells.
 #' @param CE A  vector of capture efficiencies.
-#' @param normalize Normalization method, either 'ML' (maximum likelihood) or 'TMM' (Robinson et al., 2010).
-#' @param GQ.approx If \code{TRUE}, use GQ approximation to speed up E-step.
-#' @param parallel If \code{TRUE}, run in parallel.
+#' @param normalize Method for estimating size factors, either 'ML' (maximum likelihood, Ye et al., 2017) or 'TMM' (Robinson et al., 2010).
+#' @param GQ.approx If \code{TRUE}, use Gaussian-Quadrature approximation to speed up E-step.
+#' @param maxit maximum number of iterations for EM algorithm.
+#' @param parallel If \code{TRUE}, run DECENT in parallel.
 #'
 #' @return A list of no DE model estimates
 #' @examples

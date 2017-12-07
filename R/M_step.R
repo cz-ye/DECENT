@@ -1,7 +1,14 @@
 #' M-step
 #'
-#' Perform the last part of M-step gene by gene, update pi_0, mu and phi
+#' Calculate negative complete data log-likelihood of DECENT model
+#' @param p vector of the following parameters: log odds-ratio of pi0, log mean of the first cell type,
+#' log fold-change for the mean parameter and log of dispersion (1/size) parameter.
+#' @param y vector containing the expected number of molecules as output from the E-step.
+#' @param sf vector of size factor estimates
+#' @param status the estimated probability of non-zero pre-dropout count, output of the E-step.
+#' @param ct A factor or a integer/numeric vector starting from 1 giving cell-type labels
 #'
+#' @return negative complete data log-likelihood evaluated at the parameter values.
 #'
 MstepNB <- function(p, y, sf, status, ct) {
   #n.ct=max(ct)
@@ -15,15 +22,15 @@ MstepNB <- function(p, y, sf, status, ct) {
   return(-sum(logl))
 }
 
-#' Gradient of log-likelihood function for ZINB model
+#' Gradient of complete data log-likelihood function for DECENT model
 #'
 #' Not used currently
 #'
 #' @param p A vector of parameter
 #' p[1] = logistic regression intercept for pi0
-#' p[2] = log mu1
-#' p[3] = log DE par for mu
-#' p[4] = log disp parameter
+#' p[2] = log mu for the first cell type
+#' p[3] = log fold-change (FC) for mean parameter
+#' p[4] = log dispersion (1/size) parameter
 #'
 zinbGrad <- function(p,y,status,sf,ct) {
 

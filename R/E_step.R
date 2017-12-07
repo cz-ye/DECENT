@@ -2,22 +2,20 @@
 #'
 #' Perform E-step for one gene, without GQ approximation
 #'
-#' @param par A vector of dropout model
-#' @param z A matrix, 1st col = obs count, 2nd,3rd row = DO par
-#' @param z.ind A binary indicator of (z == 0) in the original obs count (before imputation)
+#' @param par A matrix with two columns containing coefficient for the dropout model. The second column is currently unused
+#' and set to zero but may be used in the future to model droput rates dependence on gene-specific factors.
+#' @param z vector of observed count
+#' @param z.ind A binary indicator of (z>0) in the original obs count (before imputation)
 #' @param sf Size factors for different cells
-#' @param mu Mean parameter for gene i
-#' @param disp Reciprocal of size parameter for gene i
+#' @param pi0 Gene-specific zero-inflated parameter
+#' @param mu Gene-specific mean parameter
+#' @param disp Reciprocal of gene-specific size parameter for
 #'
 EstepByGene <- function(par, z, z.ind, sf, pi0, mu, disp, y) {
 
   y <- 1:max(2, qnbinom(0.999, mu = max(mu*sf), size = 1/disp)) #changed to 350 on 01/12/16
- # DO.probs is 200 x ncell matrix
   DO.prob <- apply(as.matrix(cbind(z, par)), 1, calcDOProb, y = y)
 
-  #take into account DE
-  #mu <- mu*dmu
-  #pi0 <- pi0 + dpi0
   NB.prob <- t(apply(as.matrix(y), 1, calcNBProb, mu = mu*sf, size = 1/disp))
   NB.prob <- NB.prob %*% diag(1-pi0)
 
@@ -35,7 +33,6 @@ EstepByGene <- function(par, z, z.ind, sf, pi0, mu, disp, y) {
   EY.wt <- (DO.prob*NB.prob) %*% diag(1/(PZ0E1))
   # impute for all obs
   EYZ0E1 <- colSums(EY.wt*y)
-  #EYZ0E1[z.ind] <- z[z.ind]/par
 
   out <- list()
   out[['PZ0E1']] <- PZ0E1
@@ -76,6 +73,3 @@ calcDOProb <- function(x, y, rho = 0.2) {
 calcNBProb <- function(y, mu, size) {
   return(dnbinom(y, mu = mu, size = size))
 }
-
-
-

@@ -2,19 +2,20 @@
 #'
 #' Fit the DECENT model with DE assumption
 #'
-#' @param data.obs Observed count matrix for endogeneous genes, rows represent genes, columns represent cells
-#' @param spike Observed count matrix for spike-ins, rows represent spike-in molecules, columns represent cells
+#' @param data.obs Observed count matrix for endogeneous genes, rows represent genes, columns represent cells.
+#' @param spike Observed count matrix for spike-ins, rows represent spike-ins, columns represent cells
 #' (ONLY if spikes = \code{TRUE}).
-#' @param spike.conc spike.conc A vector of theoretical count for each spike-in in one cell (ONLY if spikes = \code{TRUE}).
-#' @param CE.range A two-element vector of the lower limit and upper limit for the estimated
-#' capture efficiencies (ONLY if spikes = \code{FALSE}, default [0.02, 0.10]).
+#' @param spike.conc A vector of theoretical count for each spike-in in one cell (ONLY needed if spikes = \code{TRUE}).
+#' @param CE.range A two-element vector of the lower limit and upper limit for the estimated range of
+#' capture efficiencies (ONLY needed if spikes = \code{FALSE}, default [0.02, 0.10]).
 #' @param cell.type A factor or a integer/numeric vector starting from 1 providing cell-type labels.
 #' @param use.spikes If \code{TRUE}, use spike-ins to estimate capture efficiencies.
-#' @param normalize Normalization method, either 'ML' (maximum likelihood) or 'TMM' (Robinson et al., 2010).
-#' @param GQ.approx If \code{TRUE}, use GQ approximation to speed up E-step.
-#' @param parallel If \code{TRUE}, run in parallel.
+#' @param normalize Method for estimating size factors, either 'ML' (maximum likelihood, Ye et al., 2017) or 'TMM' (Robinson et al., 2010).
+#' @param GQ.approx If \code{TRUE}, use Gaussian-Quadrature approximation to speed up E-step.
+#' @param maxit maximum number of iterations for EM algorithm.
+#' @param parallel If \code{TRUE}, run DECENT in parallel.
 #'
-#' @return A list of DE model estimates
+#' @return A list containing estimates of DE model
 #' @examples
 #'
 #' @import MASS

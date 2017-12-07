@@ -1,14 +1,14 @@
 #' Likelihood-ratio test
 #'
-#' Likelihood-ratio test
+#' Likelihood-ratio test for DE analysis of scRNA-seq data
 #'
 #' @param data.obs Observed count matrix for endogeneous genes, rows represent genes, columns represent cells
-#' @param out Output object from EM for DE model
-#' @param out2 Output object from EM for no-DE model
+#' @param out Output of fitDE, it contains EM algorithm estimates for models with DE between cell-types.
+#' @param out2 Output of fitNoDE, it contains EM algorithm estimates for models without DE between cell-types
 #' @param cell.type A factor or a integer/numeric vector starting from 1 giving cell-type labels
 #' @param parallel If \code{TRUE}, run in parallel
 #'
-#' @return A list including statistics, p-values and parameters for likelihood-ratio test.
+#' @return A list containing statistics, p-values and parameter estimates for models with and without DE.
 #'
 #' @useDynLib DECENT
 #' @importFrom Rcpp sourceCpp
@@ -110,6 +110,3 @@ lrTest <- function(data.obs, out, out2, cell.type, parallel) {
 
   return(output)
 }
-
-
-

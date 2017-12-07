@@ -8,28 +8,30 @@ fitDE(data.obs, cell.type, spikes, spike.conc, CE.range, use.spikes, normalize,
   GQ.approx, maxit, parallel)
 }
 \arguments{
-\item{data.obs}{Observed count matrix for endogeneous genes, rows represent genes, columns represent cells}
+\item{data.obs}{Observed count matrix for endogeneous genes, rows represent genes, columns represent cells.}
 
 \item{cell.type}{A factor or a integer/numeric vector starting from 1 providing cell-type labels.}
 
-\item{spike.conc}{spike.conc A vector of theoretical count for each spike-in in one cell (ONLY if spikes = \code{TRUE}).}
+\item{spike.conc}{A vector of theoretical count for each spike-in in one cell (ONLY needed if spikes = \code{TRUE}).}
 
-\item{CE.range}{A two-element vector of the lower limit and upper limit for the estimated
-capture efficiencies (ONLY if spikes = \code{FALSE}, default [0.02, 0.10]).}
+\item{CE.range}{A two-element vector of the lower limit and upper limit for the estimated range of
+capture efficiencies (ONLY needed if spikes = \code{FALSE}, default [0.02, 0.10]).}
 
 \item{use.spikes}{If \code{TRUE}, use spike-ins to estimate capture efficiencies.}
 
-\item{normalize}{Normalization method, either 'ML' (maximum likelihood) or 'TMM' (Robinson et al., 2010).}
+\item{normalize}{Method for estimating size factors, either 'ML' (maximum likelihood, Ye et al., 2017) or 'TMM' (Robinson et al., 2010).}
 
-\item{GQ.approx}{If \code{TRUE}, use GQ approximation to speed up E-step.}
+\item{GQ.approx}{If \code{TRUE}, use Gaussian-Quadrature approximation to speed up E-step.}
 
-\item{parallel}{If \code{TRUE}, run in parallel.}
+\item{maxit}{maximum number of iterations for EM algorithm.}
 
-\item{spike}{Observed count matrix for spike-ins, rows represent spike-in molecules, columns represent cells
+\item{parallel}{If \code{TRUE}, run DECENT in parallel.}
+
+\item{spike}{Observed count matrix for spike-ins, rows represent spike-ins, columns represent cells
 (ONLY if spikes = \code{TRUE}).}
 }
 \value{
-A list of DE model estimates
+A list containing estimates of DE model
 }
 \description{
 Fit the DECENT model with DE assumption

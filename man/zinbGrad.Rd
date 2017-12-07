@@ -2,16 +2,16 @@
 % Please edit documentation in R/M_step.R
 \name{zinbGrad}
 \alias{zinbGrad}
-\title{Gradient of log-likelihood function for ZINB model}
+\title{Gradient of complete data log-likelihood function for DECENT model}
 \usage{
 zinbGrad(p, y, status, sf, ct)
 }
 \arguments{
 \item{p}{A vector of parameter
 p[1] = logistic regression intercept for pi0
-p[2] = log mu1
-p[3] = log DE par for mu
-p[4] = log disp parameter}
+p[2] = log mu for the first cell type
+p[3] = log fold-change (FC) for mean parameter
+p[4] = log dispersion (1/size) parameter}
 }
 \description{
 Not used currently

@@ -11,11 +11,13 @@ fitNoDE(data.obs, CE, normalize, GQ.approx, maxit, parallel)
 
 \item{CE}{A  vector of capture efficiencies.}
 
-\item{normalize}{Normalization method, either 'ML' (maximum likelihood) or 'TMM' (Robinson et al., 2010).}
+\item{normalize}{Method for estimating size factors, either 'ML' (maximum likelihood, Ye et al., 2017) or 'TMM' (Robinson et al., 2010).}
 
-\item{GQ.approx}{If \code{TRUE}, use GQ approximation to speed up E-step.}
+\item{GQ.approx}{If \code{TRUE}, use Gaussian-Quadrature approximation to speed up E-step.}
 
-\item{parallel}{If \code{TRUE}, run in parallel.}
+\item{maxit}{maximum number of iterations for EM algorithm.}
+
+\item{parallel}{If \code{TRUE}, run DECENT in parallel.}
 }
 \value{
 A list of no DE model estimates
