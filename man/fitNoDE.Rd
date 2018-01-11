@@ -9,7 +9,7 @@ fitNoDE(data.obs, CE, normalize, GQ.approx, maxit, parallel)
 \arguments{
 \item{data.obs}{Observed count matrix for endogeneous genes, rows represent genes, columns represent cells.}
 
-\item{CE}{A  vector of capture efficiencies.}
+\item{CE}{A  vector containing capture efficiencies for all cells.}
 
 \item{normalize}{Method for estimating size factors, either 'ML' (maximum likelihood, Ye et al., 2017) or 'TMM' (Robinson et al., 2010).}
 

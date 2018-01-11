@@ -63,6 +63,8 @@ loglI <- function(p, z, sf, ct, DO.par) {
 
 #' Calculate probability for dropout model
 #'
+#' @import VGAM
+#'
 calcDOProb <- function(x, y, rho = 0.2) {
   return(dbetabinom(x[1], prob = exp(x[2] + x[3]*log(y+1))/(1 + exp(x[2] + x[3]*log(y+1))), size = y, log = FALSE, rho = rho))
 #  return(dbinom(x[1], prob = exp(x[2] + x[3]*log(y+1))/(1 + exp(x[2] + x[3]*log(y+1))), size = y, log = FALSE))

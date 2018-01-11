@@ -3,7 +3,7 @@
 #' Fit the DECENT model with no-DE assumption
 #'
 #' @param data.obs Observed count matrix for endogeneous genes, rows represent genes, columns represent cells.
-#' @param CE A  vector of capture efficiencies.
+#' @param CE A  vector containing capture efficiencies for all cells.
 #' @param normalize Method for estimating size factors, either 'ML' (maximum likelihood, Ye et al., 2017) or 'TMM' (Robinson et al., 2010).
 #' @param GQ.approx If \code{TRUE}, use Gaussian-Quadrature approximation to speed up E-step.
 #' @param maxit maximum number of iterations for EM algorithm.

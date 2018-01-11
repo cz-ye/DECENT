@@ -57,8 +57,9 @@ decent <- function (data.obs, cell.type, spikes = NULL, spike.conc = NULL, CE.ra
   saveRDS(out, paste0(dir, '/decent.lrt.rds'))
 
   # get imputed data
-  # TODO
   if (imputed) {
+    data.imp <- getImputed(data.obs, out$par.DE, out.DE$est.sf, out.DE$CE, cell.type, parallel)
+    saveRDS(data.imp, paste0(dir, '/imputed.rds'))
   }
 
   # Generate table
