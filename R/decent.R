@@ -40,7 +40,7 @@ decent <- function (data.obs, cell.type, spikes = NULL, spike.conc = NULL, CE.ra
       n.cores <- t.cores
     }
     registerDoParallel(cl)
-    print(paste0('Running in parallel, ', n.cores, ' cores used.'))
+    message('Running in parallel, ', n.cores, ' cores used.')
   }
 
   # Fit DE model

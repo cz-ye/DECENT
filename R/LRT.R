@@ -17,7 +17,7 @@
 #'
 lrTest <- function(data.obs, out, out2, cell.type, parallel) {
 
-  print(paste0('Likelihood ratio test started at ', Sys.time()))
+  message('Likelihood ratio test started at ', Sys.time())
 
   if (class(cell.type) %in% c('factor', 'numeric')) {
     cell.type.names <- levels(cell.type)
@@ -40,23 +40,21 @@ lrTest <- function(data.obs, out, out2, cell.type, parallel) {
 
   if (parallel) {
     temp <- foreach (i = 1:ngene, .combine = 'rbind', .packages = c('DECENT')) %dopar% {
-      print(paste0(i, ' started'))
       y <- 1 : max(100, qnbinom(0.9999, mu = max(out2$est.mu[i]*out2$est.sf), size = 1/out2$est.disp[i]))
 
       res2 <- tryCatch(optim(p = c(log(out2$est.pi0[i,1]/(1-out2$est.pi0[i,1])), log(out2$est.mu[i]), -2), fn = loglIBBCpp, y = y,
                              sf = out2$est.sf, ct = rep(1, ncell), DO_par = DO.par, z = data.obs[i, ], lower = -30),
                        error = function(e) {
-                         print(paste("numerical problem in noDE model for gene", i));
+                         warning("Numerical problem in noDE model for gene ", i);
                          NA
                        })
 
       res1 <- tryCatch(optim(p = c(res2$p[1:2],0,res2$p[3]), fn = loglIBBCpp, y = y,
                              sf = out2$est.sf, ct = cell.type, DO_par = DO.par, z = data.obs[i,], lower = -30),
                        error = function(e) {
-                         print(paste("numerical problem in DE model for gene", i));
+                         warning("Numerical problem in DE model for gene ", i);
                          NA
                        })
-      print(paste0(i, ' ended'))
       if (is.na(res1) | is.na(res2)) {
         return(rep(0, 5+2*ncelltype))
       } else {
@@ -74,13 +72,13 @@ lrTest <- function(data.obs, out, out2, cell.type, parallel) {
       res2 <- tryCatch(optim(p = c(log(out2$est.pi0[i,1]/(1-out2$est.pi0[i,1])), log(out2$est.mu[i]), -2), fn = loglIBBCpp, y = y,
                              sf = out2$est.sf, ct = rep(1, ncell), DO_par = DO.par, z = data.obs[i, ], lower = -30),
                        error = function(e) {
-                         print(paste("numerical problem in noDE model for gene", i));
+                         message("numerical problem in noDE model for gene ", i);
                          NA
                        })
       res1 <- tryCatch(optim(p = c(res2$p[1:2],0,res2$p[3]), fn = loglIBBCpp, y = y,
                              sf = out2$est.sf, ct = cell.type, DO_par = DO.par, z = data.obs[i,], lower = -30),
                        error = function(e) {
-                         print(paste("numerical problem in DE model for gene", i));
+                         message("numerical problem in DE model for gene ", i);
                          NA
                        })
       if (is.na(res1) | is.na(res2)) {
@@ -92,7 +90,7 @@ lrTest <- function(data.obs, out, out2, cell.type, parallel) {
       }
     }
   }
-  print(paste0('Likelihood ratio test finished at ', Sys.time()))
+  message('Likelihood ratio test finished at ', Sys.time())
 
   output <- list()
   lrt.stat <- 2*(logl1 - logl2)

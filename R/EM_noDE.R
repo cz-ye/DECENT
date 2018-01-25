@@ -59,7 +59,7 @@ fitNoDE <- function (data.obs, CE, normalize, GQ.approx, maxit, parallel) {
   converge <- FALSE
   if (GQ.approx) gq <- gauss.quad(64, kind = 'legendre') else gq <- NULL
 
-  print(paste0('No-DE model fitting started at ', Sys.time()))
+  message('No-DE model fitting started at ', Sys.time())
   # Begin EM algorithm
   for (iter in 1:maxit) {
 
@@ -116,7 +116,7 @@ fitNoDE <- function (data.obs, CE, normalize, GQ.approx, maxit, parallel) {
       tmm <- calcNormFactors(data.imp2)
       est.sf <- colSums(data.imp2)*tmm
     } else {
-      print('Normalization method should either be "ML" or "TMM"')
+      stop('Normalization method should either be "ML" or "TMM"')
     }
     est.sf <- est.sf/mean(est.sf)
 
@@ -124,7 +124,6 @@ fitNoDE <- function (data.obs, CE, normalize, GQ.approx, maxit, parallel) {
     loglik <- rep(0, ngene)
     if (parallel) {
       temp <- foreach (i = 1:ngene, .combine = 'rbind', .packages = c('ZIM', 'DECENT')) %dopar% {
-        #print(i)
         if (sum(data.imp[i, ])>sum(data.obs[i, ])) {
           prop0 <- ifelse(est.pi0[i, 1] < 0.01,
                           0.025, ifelse(est.pi0[i, 1] > 0.99, 0.975, est.pi0[i,1]))
@@ -172,7 +171,7 @@ fitNoDE <- function (data.obs, CE, normalize, GQ.approx, maxit, parallel) {
     }
 
     loglik.vec[iter] <- sum(loglik)
-    print(paste0('EM iteration ', iter, ' finished at ', Sys.time(), '  Log-likelihood: ', loglik.vec[iter]))
+    message('EM iteration ', iter, ' finished at ', Sys.time(), '  Log-likelihood: ', loglik.vec[iter])
 
     if (iter > 5) {
       if ( (loglik.vec[iter] - loglik.vec[iter-1])/abs(loglik.vec[iter-1]) < 1e-03 | iter == maxit ) converge <- TRUE
@@ -184,7 +183,7 @@ fitNoDE <- function (data.obs, CE, normalize, GQ.approx, maxit, parallel) {
     }
   } # end of EM loop
 
-  print(paste0('No-DE model fitting finished at ', Sys.time()))
+  message('No-DE model fitting finished at ', Sys.time())
 
   # Output
   if(ncelltype>1) {

@@ -80,7 +80,7 @@ fitDE <- function (data.obs, cell.type, spikes, spike.conc, CE.range, use.spikes
   converge <- FALSE
   if (GQ.approx) gq <- gauss.quad(48, kind = 'legendre') else gq <- NULL
 
-  print(paste0('DE model fitting started at ', Sys.time()))
+  message('DE model fitting started at ', Sys.time())
   # Begin EM algorithm
   for (iter in 1:maxit) {
 
@@ -137,7 +137,7 @@ fitDE <- function (data.obs, cell.type, spikes, spike.conc, CE.range, use.spikes
       tmm <- calcNormFactors(data.imp2)
       est.sf <- colSums(data.imp2)*tmm
     } else {
-      print('Normalization method should either be "ML" or "TMM"')
+      stop('Normalization method should either be "ML" or "TMM"')
     }
     est.sf <- est.sf/mean(est.sf)
 
@@ -192,7 +192,7 @@ fitDE <- function (data.obs, cell.type, spikes, spike.conc, CE.range, use.spikes
     }
 
     loglik.vec[iter] <- sum(loglik)
-    print(paste0('EM iteration ', iter, ' finished at ', Sys.time(), '  Log-likelihood: ', loglik.vec[iter]))
+    message('EM iteration ', iter, ' finished at ', Sys.time(), '  Log-likelihood: ', loglik.vec[iter])
 
     if (iter > 5) {
       if ( (loglik.vec[iter-1] - loglik.vec[iter])/loglik.vec[iter-1] < 1e-3 | iter == maxit ) converge <- TRUE
@@ -204,7 +204,7 @@ fitDE <- function (data.obs, cell.type, spikes, spike.conc, CE.range, use.spikes
     }
   } # end of EM loop
 
-  print(paste0('DE Model fitting finished at ', Sys.time()))
+  message('DE Model fitting finished at ', Sys.time())
 
   # Output
   rownames(est.mu) <- rownames(data.obs)
