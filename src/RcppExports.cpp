@@ -5,22 +5,6 @@
 
 using namespace Rcpp;
 
-// test
-double test(NumericVector p, IntegerVector ct, NumericVector sf, IntegerVector y, NumericVector z, NumericMatrix DO_par);
-RcppExport SEXP _DECENT_test(SEXP pSEXP, SEXP ctSEXP, SEXP sfSEXP, SEXP ySEXP, SEXP zSEXP, SEXP DO_parSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< NumericVector >::type p(pSEXP);
-    Rcpp::traits::input_parameter< IntegerVector >::type ct(ctSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type sf(sfSEXP);
-    Rcpp::traits::input_parameter< IntegerVector >::type y(ySEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type z(zSEXP);
-    Rcpp::traits::input_parameter< NumericMatrix >::type DO_par(DO_parSEXP);
-    rcpp_result_gen = Rcpp::wrap(test(p, ct, sf, y, z, DO_par));
-    return rcpp_result_gen;
-END_RCPP
-}
 // loglIBBCpp
 double loglIBBCpp(NumericVector p, IntegerVector ct, NumericVector sf, IntegerVector y, NumericVector z, NumericMatrix DO_par);
 RcppExport SEXP _DECENT_loglIBBCpp(SEXP pSEXP, SEXP ctSEXP, SEXP sfSEXP, SEXP ySEXP, SEXP zSEXP, SEXP DO_parSEXP) {
@@ -39,7 +23,6 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_DECENT_test", (DL_FUNC) &_DECENT_test, 6},
     {"_DECENT_loglIBBCpp", (DL_FUNC) &_DECENT_loglIBBCpp, 6},
     {NULL, NULL, 0}
 };
