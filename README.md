@@ -4,6 +4,11 @@ Differential Expression with Capture Efficiency adjustmeNT for single-cell RNA-s
 C. Ye, TP. Speed, A. Salim (2017) DECENT: Differential Expression with Capture Efficiency AdjustmeNT for Single-Cell RNA-seq Data. bioRxiv. https://doi.org/10.1101/225177
 
 ## News
+Jan 30, 2018
+* Version 0.1.2 released.
+* Changed LRT starting values.
+* Other minor changes.
+
 Jan 15, 2018
 * Version 0.1.1 released.
 * Imputed data matrix can now be obtained by calling function `getImputed` or set `imputed = TRUE` when calling `decent`.
