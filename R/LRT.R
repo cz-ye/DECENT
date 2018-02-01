@@ -10,6 +10,7 @@
 #'
 #' @return A list containing statistics, p-values and parameter estimates for models with and without DE.
 #'
+#' @import RcppNumerical
 #' @useDynLib DECENT
 #' @importFrom Rcpp sourceCpp
 #'
@@ -42,15 +43,15 @@ lrTest <- function(data.obs, out, out2, cell.type, parallel) {
     temp <- foreach (i = 1:ngene, .combine = 'rbind', .packages = c('DECENT')) %dopar% {
       y <- 1 : max(100, qnbinom(0.9999, mu = max(out2$est.mu[i]*out2$est.sf), size = 1/out2$est.disp[i]))
 
-      res2 <- tryCatch(optim(p = c(log(out2$est.pi0[i,1]/(1-out2$est.pi0[i,1])), log(out2$est.mu[i]), -2), fn = loglIBBCpp, y = y,
-                             sf = out2$est.sf, ct = rep(1, ncell), DO_par = DO.par, z = data.obs[i, ], lower = -30),
+      res2 <- tryCatch(optimLRTCpp(p = c(log(out2$est.pi0[i,1]/(1-out2$est.pi0[i,1])), log(out2$est.mu[i]), -2), y = y,
+                                   sf = out2$est.sf, ct = rep(1, ncell), DO_par = DO.par, z = data.obs[i,]),
                        error = function(e) {
                          warning("Numerical problem in noDE model for gene ", i);
                          NA
                        })
 
-      res1 <- tryCatch(optim(p = c(res2$p[1:2],0,res2$p[3]), fn = loglIBBCpp, y = y,
-                             sf = out2$est.sf, ct = cell.type, DO_par = DO.par, z = data.obs[i,], lower = -30),
+      res1 <- tryCatch(optimLRTCpp(p = c(res2$p[1:2], 0, res2$p[3]), y = y,
+                                   sf = out2$est.sf, ct = cell.type, DO_par = DO.par, z = data.obs[i, ]),
                        error = function(e) {
                          warning("Numerical problem in DE model for gene ", i);
                          NA
@@ -58,7 +59,13 @@ lrTest <- function(data.obs, out, out2, cell.type, parallel) {
       if (is.na(res1) | is.na(res2)) {
         return(rep(0, 5+2*ncelltype))
       } else {
-        return(c(res1$p, res2$p, -res1$v, -res2$v))
+        if (res1$status < 0) {
+          warning("DE model failed to converge for gene ", i)
+        }
+        if (res2$status < 0) {
+          warning("noDE model failed to converge for gene ", i)
+        }
+        return(c(res1$par, res2$par, -res1$fopt, -res2$fopt))
       }
     }
     par1 <- temp[, 1:(2+ncelltype)]
@@ -69,24 +76,30 @@ lrTest <- function(data.obs, out, out2, cell.type, parallel) {
   } else {
     for(i in 1:ngene) {
       y <- 1 : max(100, qnbinom(0.9999, mu = max(out2$est.mu[i]*out2$est.sf), size = 1/out2$est.disp[i]))
-      res2 <- tryCatch(optim(p = c(log(out2$est.pi0[i,1]/(1-out2$est.pi0[i,1])), log(out2$est.mu[i]), -2), fn = loglIBBCpp, y = y,
-                             sf = out2$est.sf, ct = rep(1, ncell), DO_par = DO.par, z = data.obs[i, ], lower = -30),
+      res2 <- tryCatch(optimLRTCpp(p = c(log(out2$est.pi0[i,1]/(1-out2$est.pi0[i,1])), log(out2$est.mu[i]), -2), y = y,
+                                   sf = out2$est.sf, ct = rep(1, ncell), DO_par = DO.par, z = data.obs[i,]),
                        error = function(e) {
-                         message("numerical problem in noDE model for gene ", i);
+                         warning("numerical problem in noDE model for gene ", i);
                          NA
                        })
-      res1 <- tryCatch(optim(p = c(res2$p[1:2],0,res2$p[3]), fn = loglIBBCpp, y = y,
-                             sf = out2$est.sf, ct = cell.type, DO_par = DO.par, z = data.obs[i,], lower = -30),
+      res1 <- tryCatch(optimLRTCpp(p = c(res2$p[1:2], 0, res2$p[3]), y = y,
+                                   sf = out2$est.sf, ct = cell.type, DO_par = DO.par, z = data.obs[i, ]),
                        error = function(e) {
-                         message("numerical problem in DE model for gene ", i);
+                         warning("numerical problem in DE model for gene ", i);
                          NA
                        })
       if (is.na(res1) | is.na(res2)) {
       } else {
-        par1[i, ] <- res1$p
-        par2[i, ] <- res2$p
-        logl1[i] <- -res1$v
-        logl2[i] <- -res2$v
+        if (res1$status < 0) {
+          warning("DE model failed to converge for gene ", i)
+        }
+        if (res2$status < 0) {
+          warning("noDE model failed to converge for gene ", i)
+        }
+        par1[i, ] <- res1$par
+        par2[i, ] <- res2$par
+        logl1[i] <- -res1$fopt
+        logl2[i] <- -res2$fopt
       }
     }
   }
