@@ -4,6 +4,10 @@ Differential Expression with Capture Efficiency adjustmeNT for single-cell RNA-s
 C. Ye, TP. Speed, A. Salim (2017) DECENT: Differential Expression with Capture Efficiency AdjustmeNT for Single-Cell RNA-seq Data. bioRxiv. https://doi.org/10.1101/225177
 
 ## News
+Feb 6, 2018
+* Version 0.2.0 released.
+* Rewrite LRT in Rcpp.
+
 Jan 30, 2018
 * Version 0.1.2 released.
 * Changed LRT starting values.
