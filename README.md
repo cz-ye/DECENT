@@ -5,7 +5,7 @@ C. Ye, TP. Speed, A. Salim (2017) DECENT: Differential Expression with Capture E
 
 ## News
 Aug 15, 2018
-* Version 0.99.0 released
+* Version 0.99.1 released
 * Rho now depends on the mean by a logistic linear model.
 * Gaussian quadrature approximation for optimization in LRT.
 * Added single imputation function.
