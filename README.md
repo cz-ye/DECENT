@@ -43,7 +43,7 @@ data("sim")
 
 # DECENT with spike-ins
 de.table <- decent(data.obs = sim$data.obs, X = ~as.factor(sim$cell.type), use.spikes = T, 
-                   spikes = sim$ercc.obs, spike.conc = sim$ercc.true)
+                   spikes = sim$sp.obs, spike.conc = sim$sp.true)
 
 # DECENT without spike-ins
 de.table <- decent(data.obs = sim$data.obs, X = ~as.factor(sim$cell.type))
