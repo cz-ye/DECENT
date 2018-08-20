@@ -2,14 +2,27 @@
 % Please edit documentation in R/EM_noDE.R
 \name{fitNoDE}
 \alias{fitNoDE}
-\title{Fitting no-DE model with EM algorithm}
+\title{Fitting the unrestricted model with EM algorithm}
 \usage{
-fitNoDE(data.obs, CE, normalize, GQ.approx, maxit, parallel)
+fitNoDE(data.obs, spikes, spike.conc, use.spikes, CE.range, tau.init,
+  tau.global, tau.est, normalize, GQ.approx, maxit, parallel)
 }
 \arguments{
 \item{data.obs}{Observed count matrix for endogeneous genes, rows represent genes, columns represent cells.}
 
-\item{CE}{A  vector containing capture efficiencies for all cells.}
+\item{spike.conc}{A vector of theoretical count for each spike-in in one cell (Only needed if spikes = \code{TRUE}).}
+
+\item{use.spikes}{If \code{TRUE}, use spike-ins to estimate capture efficiencies.}
+
+\item{CE.range}{A two-element vector of the lower limit and upper limit for the estimated range of
+capture efficiencies (ONLY needed if spikes = \code{FALSE}, default [0.02, 0.10]).}
+
+\item{tau.init}{initial estimates (intcp,slope) that link Beta-Binomial dispersion parameter to the mean expression.}
+
+\item{tau.global}{whether to use the same tau parameters across cell. Default TRUE}
+
+\item{tau.est}{Methods to estimate tau parameters. The default 'endo' corresponds to using endogeneous genes. Other options
+are 'none' which means tau.init is not further estimated and 'spikes' corresponds to using spike-ins.}
 
 \item{normalize}{Method for estimating size factors, either 'ML' (maximum likelihood, Ye et al., 2017) or 'TMM' (Robinson et al., 2010).}
 
@@ -18,12 +31,14 @@ fitNoDE(data.obs, CE, normalize, GQ.approx, maxit, parallel)
 \item{maxit}{maximum number of iterations for EM algorithm.}
 
 \item{parallel}{If \code{TRUE}, run DECENT in parallel.}
+
+\item{spike}{Observed count matrix for spike-ins, rows represent spike-ins, columns represent cells. Only needed if spikes = \code{TRUE}).}
 }
 \value{
-A list of no DE model estimates
+A list containing estimates of DE model
 }
 \description{
-Fit the DECENT model with no-DE assumption
+Fit the DECENT model assuming no differentially-expressed (DE) genes
 }
 \examples{
 

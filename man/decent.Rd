@@ -4,20 +4,30 @@
 \alias{decent}
 \title{DECENT}
 \usage{
-decent(data.obs, cell.type, spikes = NULL, spike.conc = NULL,
-  CE.range = c(0.02, 0.1), use.spikes = FALSE, normalize = "ML",
+decent(data.obs, X, W = NULL, spikes = NULL, spike.conc = NULL,
+  CE.range = c(0.02, 0.1), tau.init = c(-5, 0), tau.global = T,
+  tau.est = "endo", use.spikes = FALSE, normalize = "ML",
   GQ.approx = TRUE, maxit = 30, parallel = T, n.cores = 0,
-  imputed = F, dir = "./")
+  s.imputed = F, E.imputed = F, dir = "./")
 }
 \arguments{
 \item{data.obs}{Observed count matrix for endogeneous genes, rows represent genes, columns represent cells.}
 
-\item{cell.type}{A factor or a integer/numeric vector starting from 1 providing cell-type labels.}
+\item{X}{An R model formula with covariates of interest (cell-type) as factor on the righthand side.}
+
+\item{W}{An R model formula with other covariates to adjust DE analysis on the righthand side. Default NULL}
 
 \item{spike.conc}{A vector of theoretical count for each spike-in in one cell (ONLY needed if spikes = \code{TRUE}).}
 
 \item{CE.range}{A two-element vector of the lower limit and upper limit for the estimated range of
 capture efficiencies (ONLY needed if spikes = \code{FALSE}, default [0.02, 0.10]).}
+
+\item{tau.init}{initial estimates (intcp,slope) that link Beta-Binomial dispersion parameter to the mean expression.}
+
+\item{tau.global}{whether to use the same tau parameters across cell. Default TRUE}
+
+\item{tau.est}{Methods to estimate tau parameters. The default 'endo' corresponds to using endogeneous genes. Other options
+are 'spikes' that corresponds to using spike-ins and 'none', which means tau.init is not further estimated.}
 
 \item{use.spikes}{If \code{TRUE}, use spike-ins to estimate capture efficiencies.}
 
@@ -29,12 +39,13 @@ capture efficiencies (ONLY needed if spikes = \code{FALSE}, default [0.02, 0.10]
 
 \item{n.cores}{Number of CPU cores to use, default is all (ONLY if parallel=\code{TRUE}).}
 
-\item{imputed}{If \code{TRUE}, include imputed data matrix in the output (Not available now).}
+\item{s.imputed}{If \code{TRUE}, save the single imputed data matrix under the output diretory.}
 
-\item{dir}{Output directory for the DE model estimates, no-DE model estimates as well as the LRT output.}
+\item{E.imputed}{If \code{TRUE}, save the mean imputed data matrix under the output diretory.}
 
-\item{spike}{Observed count matrix for spike-ins, rows represent spike-ins, columns represent cells
-(ONLY if spikes = \code{TRUE}).}
+\item{dir}{Directory to save all outputs, including EM algorithm estimates of no-DE model and the LRT output.}
+
+\item{spike}{Observed count matrix for spike-ins, rows represent spike-ins, columns represent cells. Only needed if spikes = \code{TRUE}).}
 }
 \value{
 A list containing the result of differential expression analysis, with the following components: stat,pval,par.DE and par.noDE.

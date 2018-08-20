@@ -4,7 +4,7 @@
 \alias{calc2DOProb}
 \title{Calculate probability for dropout model}
 \usage{
-calc2DOProb(x, y, rho = 0.2)
+calc2DOProb(x, y)
 }
 \description{
 Calculate probability for dropout model

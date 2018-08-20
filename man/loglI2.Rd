@@ -4,7 +4,7 @@
 \alias{loglI2}
 \title{Calculate Log Likelihood}
 \usage{
-loglI2(p, z, sf, ct, DO.par, GQ.object)
+loglI2(p, z, sf, ct, DO.par, k, b, GQ.object)
 }
 \description{
 Calculate Log Likelihood

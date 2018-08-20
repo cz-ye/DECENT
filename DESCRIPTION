@@ -1,13 +1,11 @@
 Package: DECENT
 Type: Package
 Title: Differential Expression with Capture Efficiency adjustmeNT
-Version: 0.2.0
+Version: 0.99.1
 Author: Chengzhong Ye & Agus Salim
 Maintainer: Chengzhong Ye <ye.c@wehi.edu.au>
 Description: Differential expression model for single-cell RNA-seq data.
 License: GPL-3
 Encoding: UTF-8
 LazyData: true
-Imports: Rcpp (>= 0.12.12), RcppNumerical
-LinkingTo: Rcpp, RcppEigen, RcppNumerical
-RoxygenNote: 6.0.1
+RoxygenNote: 6.1.0

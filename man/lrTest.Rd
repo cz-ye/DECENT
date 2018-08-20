@@ -4,21 +4,23 @@
 \alias{lrTest}
 \title{Likelihood-ratio test}
 \usage{
-lrTest(data.obs, out, out2, cell.type, parallel)
+lrTest(data.obs, out, X, W = NULL, tau, parallel)
 }
 \arguments{
 \item{data.obs}{Observed count matrix for endogeneous genes, rows represent genes, columns represent cells}
 
-\item{out}{Output of fitDE, it contains EM algorithm estimates for models with DE between cell-types.}
+\item{out}{Output of fitNoDE, it contains EM algorithm estimates for models without DE between cell-types}
 
-\item{out2}{Output of fitNoDE, it contains EM algorithm estimates for models without DE between cell-types}
+\item{X}{Data matrix containing dummy variables for covariates of interest (cell-type)}
 
-\item{cell.type}{A factor or a integer/numeric vector starting from 1 giving cell-type labels}
+\item{W}{Data matrix containing other covariates to adjust DE analysis. Default NULL}
+
+\item{tau}{cell-specific estimates (intcp,slope) that link Beta-Binomial dispersion parameter to the mean expression.}
 
 \item{parallel}{If \code{TRUE}, run in parallel}
 }
 \value{
-A list containing statistics, p-values and parameter estimates for models with and without DE.
+A list containing statistics, p-values and parameter estimates for models without DE.
 }
 \description{
 Likelihood-ratio test for DE analysis of scRNA-seq data

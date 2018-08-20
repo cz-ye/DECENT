@@ -4,15 +4,13 @@
 \alias{Estep2ByGene}
 \title{E-step with Gauss–Legendre quadrature approximation}
 \usage{
-Estep2ByGene(par, z, z.ind, sf, pi0, mu, disp, GQ.object)
+Estep2ByGene(par, z, sf, pi0, mu, disp, k, b, GQ.object)
 }
 \arguments{
 \item{par}{A matrix with two columns containing coefficient for the dropout model. The second column is currently unused
 and set to zero but may be used in the future to model droput rates dependence on gene-specific factors.}
 
 \item{z}{vector of observed count}
-
-\item{z.ind}{A binary indicator of (z>0) in the original obs count (before imputation)}
 
 \item{sf}{Size factors for different cells}
 

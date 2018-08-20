@@ -4,6 +4,14 @@ Differential Expression with Capture Efficiency adjustmeNT for single-cell RNA-s
 C. Ye, TP. Speed, A. Salim (2017) DECENT: Differential Expression with Capture Efficiency AdjustmeNT for Single-Cell RNA-seq Data. bioRxiv. https://doi.org/10.1101/225177
 
 ## News
+Aug 15, 2018
+* Version 0.99.0 released
+* Rho now depends on the mean by a logistic linear model.
+* Gaussian quadrature approximation for optimization in LRT.
+* Added single imputation function.
+* GLM framework for complex design.
+* Other corresponding changes.
+
 Feb 6, 2018
 * Version 0.2.0 released.
 * Rewrite LRT in Rcpp.
@@ -34,11 +42,11 @@ Here we use a simulated dataset for demonstration
 data("sim")
 
 # DECENT with spike-ins
-de.table <- decent(data.obs = sim$data.obs, cell.type = sim$cell.type, use.spikes = T, 
+de.table <- decent(data.obs = sim$data.obs, X = ~as.factor(sim$cell.type), use.spikes = T, 
                    spikes = sim$ercc.obs, spike.conc = sim$ercc.true)
 
 # DECENT without spike-ins
-de.table <- decent(data.obs = sim$data.obs, cell.type = sim$cell.type)
+de.table <- decent(data.obs = sim$data.obs, X = ~as.factor(sim$cell.type))
 
 # Ground truth can be found in the DE.gene vector.
 ```

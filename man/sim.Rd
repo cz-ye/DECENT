@@ -7,25 +7,25 @@
 \format{A list containing five objects:
 \describe{
   \item{\code{data.obs}}{
-    a numeric matrix with 1,000 genes and 200 cells: observed count matrix for endogeneous genes
+    a numeric matrix with 2,944 genes and 500 cells: the observed count matrix for endogeneous genes
   }
   \item{\code{cell.type}}{
-    a numeric vector of length 200: cell-type information
+    a numeric vector of length 500: the binary indicator of cellular groups
   }
-  \item{\code{ercc.obs}}{
-    a numeric matrix with 50 spike-ins and 200 cells: observed count matrix for spike-in molecules
+  \item{\code{sp.obs}}{
+    a numeric matrix of 50 spike-ins and 500 cells: the observed count matrix for spike-in molecules
   }
-  \item{\code{ercc.true}}{
-    a numeric vector of length 50: true count of spike-ins added into each cell
+  \item{\code{sp.true}}{
+    a numeric vector of length 50: the true count of spike-ins added into each cell
   }
   \item{\code{DE.gene}}{
-    a logical vector of length 1,000: whether the gene is actually DE or not.
+    a logical vector of length 2,944: whether the gene is actually DE or not.
   }
 }}
 \usage{
 sim
 }
 \description{
-A simulated dataset for demonstration. 1,000 genes and 200 cells, with 100 cells in each group.
+A simulated dataset for demonstration. 2,944 genes and 500 cells from two groups (224 vs 276).
 }
 \keyword{datasets}
