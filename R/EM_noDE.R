@@ -192,12 +192,16 @@ fitNoDE <- function(data.obs, spikes, spike.conc, use.spikes, CE.range, tau.init
         if (sum(data.imp[i, ])>sum(data.obs[i, ])) {
           prop0 <- ifelse(est.pi0[i, 1] < 0.01,
                           0.025, ifelse(est.pi0[i, 1] > 0.99, 0.975, est.pi0[i,1]))
-          out <- optim(par = c(log(prop0/(1-prop0)), log(mean(data.imp[i, ], na.rm=T)), rep(0, ncelltype-1), -2),
-                       fn = MstepNB, y = data.imp[i, ], sf = est.sf, status = PE[i, ], ct = cell.type,lower=-30)#,
-                       #gr = zinbGrad, method = 'L-BFGS-B')
+          out <- tryCatch(optim(par = c(log(prop0/(1-prop0)), log(mean(data.imp[i, ], na.rm=T)), rep(0, ncelltype-1), -2),
+                                fn = MstepNB, y = data.imp[i, ], sf = est.sf, status = PE[i, ], ct = cell.type,lower=-30),
+                                #gr = zinbGrad, method = 'L-BFGS-B'),
+                          error = function(e) {
+                            c(log(prop0/(1-prop0)), log(mean(data.imp[i, ], na.rm=T)), rep(0, ncelltype-1), -2)
+                          })
           new.pi0 <- rep(1/(1 + exp(-out$p[1])), ncelltype)
           new.mu <- exp(out$p[2])
           new.disp <- exp(out$p[length(out$p)])
+          
           if(!GQ.approx){
             new.loglik <- -loglI(p = out$p, sf = est.sf, ct = cell.type, DO.par = DO.coef, z = data.obs[i, ])
           } else {
@@ -220,9 +224,12 @@ fitNoDE <- function(data.obs, spikes, spike.conc, use.spikes, CE.range, tau.init
         if (sum(data.imp[i, ])>sum(data.obs[i, ])) {
           prop0 <- ifelse(est.pi0[i, 1] < 0.01,
                           0.025, ifelse(est.pi0[i, 1] > 0.99, 0.975, est.pi0[i,1]))
-          out <- optim(par = c(log(prop0/(1-prop0)), log(mean(data.imp[i, ], na.rm=T)), rep(0, ncelltype-1), -2),
-                       fn = MstepNB, y = data.imp[i, ], sf = est.sf, status = PE[i, ], ct = cell.type,lower=-30)#,
-                       #gr = zinbGrad, method = 'L-BFGS-B')
+          out <- tryCatch(optim(par = c(log(prop0/(1-prop0)), log(mean(data.imp[i, ], na.rm=T)), rep(0, ncelltype-1), -2),
+                                fn = MstepNB, y = data.imp[i, ], sf = est.sf, status = PE[i, ], ct = cell.type,lower=-30),
+                                #gr = zinbGrad, method = 'L-BFGS-B')
+                          error = function(e) {
+                            c(log(prop0/(1-prop0)), log(mean(data.imp[i, ], na.rm=T)), rep(0, ncelltype-1), -2)
+                          })
           est.pi0[i, ] <- rep(1/(1 + exp(-out$p[1])), ncelltype)
           est.mu[i, ]  <- exp(out$p[2])
           est.disp[i] <- exp(out$p[length(out$p)])
