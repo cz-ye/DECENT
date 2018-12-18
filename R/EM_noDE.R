@@ -196,7 +196,7 @@ fitNoDE <- function(data.obs, spikes, spike.conc, use.spikes, CE.range, tau.init
                                 fn = MstepNB, y = data.imp[i, ], sf = est.sf, status = PE[i, ], ct = cell.type,lower=-30),
                                 #gr = zinbGrad, method = 'L-BFGS-B'),
                           error = function(e) {
-                            c(log(prop0/(1-prop0)), log(mean(data.imp[i, ], na.rm=T)), rep(0, ncelltype-1), -2)
+                            list(p = c(log(prop0/(1-prop0)), log(mean(data.imp[i, ], na.rm=T)), rep(0, ncelltype-1), -2))
                           })
           new.pi0 <- rep(1/(1 + exp(-out$p[1])), ncelltype)
           new.mu <- exp(out$p[2])
@@ -228,7 +228,7 @@ fitNoDE <- function(data.obs, spikes, spike.conc, use.spikes, CE.range, tau.init
                                 fn = MstepNB, y = data.imp[i, ], sf = est.sf, status = PE[i, ], ct = cell.type,lower=-30),
                                 #gr = zinbGrad, method = 'L-BFGS-B')
                           error = function(e) {
-                            c(log(prop0/(1-prop0)), log(mean(data.imp[i, ], na.rm=T)), rep(0, ncelltype-1), -2)
+                            list(p = c(log(prop0/(1-prop0)), log(mean(data.imp[i, ], na.rm=T)), rep(0, ncelltype-1), -2))
                           })
           est.pi0[i, ] <- rep(1/(1 + exp(-out$p[1])), ncelltype)
           est.mu[i, ]  <- exp(out$p[2])
