@@ -36,12 +36,15 @@ lrTest <- function(data.obs, out, X, W=NULL, tau, parallel) {
   logl1<- rep(0, ngene)
   logl2<- rep(0, ngene)
   gq <- gauss.quad(16,kind='legendre')
+  
   if (parallel) {
     temp <- foreach (i = 1:ngene, .combine = 'rbind', .packages = c('DECENT')) %dopar% {
+      out$est.pi0[i,1] <- ifelse(is.na(out$est.pi0[i,1]) | is.infinite(out$est.pi0[i,1]),0.1,out$est.pi0[i,1])
+      out$est.mu[i,1] <- ifelse(is.na(out$est.mu[i,1]) | is.infinite(out$est.mu[i,1]), mean(data.obs[i,]/out$CE,na.rm=T), out$est.mu[i,1])
       p.init <- c(log(out$est.pi0[i,1]/(1-out$est.pi0[i,1])), log(out$est.mu[i,1]), rep(0,nW+1))
       res2 <- tryCatch(optim(p = p.init, fn = loglI.GQ,
                              rho = (1+exp(-tau0-tau1*log(out$est.sf*out$est.mu[i,1]*(1-out$est.pi0[i,1]))))^-1,
-                             sf = out$est.sf, XW = XW.H0, DO.par = DO.par, z = data.obs[i,], GQ.object=gq),
+                             sf = out$est.sf, XW = XW.H0, DO.par = DO.par, z = data.obs[i,], GQ.object=gq, control=list(maxit=300)),
                        error = function(e) {
                          warning("Numerical problem in noDE model for gene ", i);
                          NA
@@ -54,7 +57,7 @@ lrTest <- function(data.obs, out, X, W=NULL, tau, parallel) {
       }
       res1 <- tryCatch(optim(p = p2.init, fn = loglI.GQ, sf = out$est.sf, XW = XW,
                              rho = (1+exp(-tau0-tau1*log(out$est.sf*out$est.mu[i,1]*(1-out$est.pi0[i,1]))))^-1,
-                             DO.par = DO.par, z = data.obs[i, ], GQ.object=gq),
+                             DO.par = DO.par, z = data.obs[i, ], GQ.object=gq, control=list(maxit=300)),
                        error = function(e) {
                          warning("Numerical problem in DE model for gene ", i);
                          NA
@@ -79,10 +82,12 @@ lrTest <- function(data.obs, out, X, W=NULL, tau, parallel) {
 
   } else {
     for(i in 1:ngene) {
+      out$est.pi0[i,1] <- ifelse(is.na(out$est.pi0[i,1]) | is.infinite(out$est.pi0[i,1]),0.1,out$est.pi0[i,1])
+      out$est.mu[i,1] <- ifelse(is.na(out$est.mu[i,1]) | is.infinite(out$est.mu[i,1]), mean(data.obs[i,]/out$CE,na.rm=T), out$est.mu[i,1])
       p.init <- c(log(out$est.pi0[i,1]/(1-out$est.pi0[i,1])), log(out$est.mu[i,1]), rep(0,nW+1))
       res2 <- tryCatch(optim(p = p.init, fn = loglI.GQ,
                              rho = (1+exp(-tau0-tau1*log(out$est.sf*out$est.mu[i,1]*(1-out$est.pi0[i,1]))))^-1,
-                             sf = out$est.sf, XW=XW.H0, DO.par = DO.par, z = data.obs[i,], GQ.object=gq),
+                             sf = out$est.sf, XW=XW.H0, DO.par = DO.par, z = data.obs[i,], GQ.object=gq, control=list(maxit=300)),
                        error = function(e) {
                          warning("numerical problem in noDE model for gene ", i);
                          NA
@@ -95,7 +100,7 @@ lrTest <- function(data.obs, out, X, W=NULL, tau, parallel) {
       }
       res1 <- tryCatch(optim(p = p2.init, fn = loglI.GQ, sf = out$est.sf, XW = XW,
                              rho = (1+exp(-tau0-tau1*log(out$est.sf*out$est.mu[i,1]*(1-out$est.pi0[i,1]))))^-1,
-                             DO.par = DO.par, z = data.obs[i, ], GQ.object=gq),
+                             DO.par = DO.par, z = data.obs[i, ], GQ.object=gq, control=list(maxit=300)),
                        error = function(e) {
                          warning("numerical problem in DE model for gene ", i);
                          NA
