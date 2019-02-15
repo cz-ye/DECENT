@@ -265,13 +265,13 @@ fitNoDE <- function(data.obs, spikes, spike.conc, use.spikes, CE.range, tau.init
         tau.old <- cbind(tau0,tau1)
         tau.new <- foreach (i = 1:ncell, .combine = 'rbind', .packages = c('DECENT')) %dopar% {
           #print(i)
-          size.bb <- ifelse(!is.na(data.imp2[,i]) & is.finite(data.imp2[,i]),data.imp2[,i]+0.001,data.obs.adj[,i])
+          size.bb <- rowMeans(data.imp2,na.rm=TRUE)*est.sf[i]
           out.tau <- optim(p=tau.old[i,],fn=update.rho3,z=data.obs[,i], size=size.bb,CE=rep(CE[i],ngene),lower=-11)
           out.tau$p
         }
         tau0 <- tau.new[, 1]; tau1 <- tau.new[, 2]
         tau.reltol <- apply( abs(tau.new-tau.old)/abs(tau.old), 2, mean)
-        tau.conv   <- ifelse(any(tau.reltol) > 1e-04, FALSE,TRUE)
+        tau.conv   <- ifelse(any(tau.reltol > 1e-04), FALSE,TRUE)
       }
     } 
 

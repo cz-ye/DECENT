@@ -1,7 +1,7 @@
 Package: DECENT
 Type: Package
 Title: Differential Expression with Capture Efficiency adjustmeNT
-Version: 0.99.1
+Version: 0.99.2
 Author: Chengzhong Ye & Agus Salim
 Maintainer: Chengzhong Ye <ye.c@wehi.edu.au>
 Description: Differential expression model for single-cell RNA-seq data.
