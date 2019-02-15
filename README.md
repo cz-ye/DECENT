@@ -4,6 +4,11 @@ Differential Expression with Capture Efficiency adjustmeNT for single-cell RNA-s
 C. Ye, TP. Speed, A. Salim (2017) DECENT: Differential Expression with Capture Efficiency AdjustmeNT for Single-Cell RNA-seq Data. bioRxiv. https://doi.org/10.1101/225177
 
 ## News
+Feb 16, 2019
+* Version 0.99.2 released
+* Modified cell-specific tau estimation.
+* Other minor changes
+
 Aug 15, 2018
 * Version 0.99.1 released
 * Rho now depends on the mean by a logistic linear model.
