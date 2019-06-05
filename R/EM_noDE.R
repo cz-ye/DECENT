@@ -76,6 +76,42 @@ fitNoDE <- function(data.obs, spikes, spike.conc, use.spikes, CE.range, tau.init
   # start with est.mu close to method of moments estimate
   est.mu[, 1] <- rowMeans( data.obs.adj %*% diag(1/est.sf) )/(1-est.pi0[,1])
   
+  # use MoM to get a reasonable starting value
+  dlogZINB <- function(p,y,sf) {
+       pi0 <- 1/(1+exp(-p[1]))
+       mu  <- exp(p[2])
+       size<- exp(-p[3])
+       -sum(ZIM::dzinb(y,omega=pi0,lambda=sf*mu,k=size,log=TRUE))
+  }
+  print('Finding starting values for EM algorithm...')  
+  if (parallel) {
+      temp <- foreach (i = 1:ngene, .combine = 'rbind', .packages = c('ZIM', 'DECENT')) %dopar% {
+          out <- tryCatch(optim(par = c(0,log(mean(data.obs.adj[i,], na.rm=T)),0),
+                                fn = dlogZINB, y = data.obs[i, ], sf = est.sf*CE,lower=-30),
+                          error = function(e) {
+                            list(p = c(0,log(mean(data.obs.adj[i,], na.rm=T)),0))
+                          })
+          new.pi0 <- rep(1/(1 + exp(-out$p[1])), ncelltype)
+          new.mu <- exp(out$p[2])
+          new.disp <- exp(out$p[length(out$p)])
+          return(c(new.pi0, new.mu, new.disp))
+      } 
+      est.pi0 <- as.matrix(temp[, 1:ncelltype])
+      est.mu <- as.matrix(temp[, (ncelltype+1):(2*ncelltype)])
+      est.disp <- temp[, 2*ncelltype+1]
+
+    } else {
+      for (i in 1:ngene) {
+          out <- tryCatch(optim(par = c(0,log(mean(data.obs.adj[i,], na.rm=T)),0),
+                                fn = dlogZINB, y = data.obs[i, ], sf = est.sf*CE,lower=-30),
+                          error = function(e) {
+                            list(p = c(0,log(mean(data.obs.adj[i,], na.rm=T)),0))
+			  })
+	  est.pi0[i, ] <- rep(1/(1 + exp(-out$p[1])), ncelltype)
+          est.mu[i, ]  <- exp(out$p[2])
+          est.disp[i] <- exp(out$p[length(out$p)])
+        }
+    }
 
   # Initialize other variables
   loglik.vec <- rep(0, maxit)
@@ -132,14 +168,14 @@ fitNoDE <- function(data.obs, spikes, spike.conc, use.spikes, CE.range, tau.init
         temp <- foreach (i = 1:ngene, .combine = 'rbind', .packages = c('DECENT')) %dopar% {
           out <- EstepByGene(par = DO.coef, z = data.obs[i, ], sf = est.sf,
                               pi0 = est.pi0[i, cell.type], mu = est.mu[i, cell.type], disp = est.disp[i])
-          return(c(ifelse(is.na(out$EYZ0E1),data.obs[i, ],out$EYZ0E1), 1 - out$PE0Z0))
+          return(c(ifelse(is.na(out$EYZ0E1) | is.infinite(out$EYZ0E1),data.obs.adj[i, ],out$EYZ0E1), 1 - out$PE0Z0))
         }
       } else {
         temp <- foreach (i = 1:ngene, .combine = 'rbind', .packages = c('MASS','ZIM', 'DECENT')) %dopar% {
           out <- Estep2ByGene(par = DO.coef,z = data.obs[i, ], sf = est.sf,
                               pi0 = est.pi0[i, cell.type], mu = est.mu[i, cell.type], disp = est.disp[i],
                               k = tau1, b = tau0, GQ.object = gq)
-          return(c(ifelse(is.na(out$EYZ0E1),data.obs[i, ],out$EYZ0E1), 1 - out$PE0Z0))
+          return(c(ifelse(is.na(out$EYZ0E1) | is.infinite(out$EYZ0E1),data.obs.adj[i, ],out$EYZ0E1), 1 - out$PE0Z0))
         }
       }
       data.imp <- temp[, 1:ncell]
@@ -151,7 +187,7 @@ fitNoDE <- function(data.obs, spikes, spike.conc, use.spikes, CE.range, tau.init
           # use E-step with expected value evaluated using GQ integral
           out <- EstepByGene(par = DO.coef, z = data.obs[i, ], sf = est.sf,
                              pi0 = est.pi0[i, cell.type], mu = est.mu[i, cell.type], disp = est.disp[i])
-          data.imp[i, ] <- ifelse(is.na(out$EYZ0E1),data.obs[i, ],out$EYZ0E1)
+          data.imp[i, ] <- ifelse(is.na(out$EYZ0E1) | is.infinite(out$EYZ0E1),data.obs.adj[i, ],out$EYZ0E1)
           PE[i, ]<- 1 - out$PE0Z0
         }
       } else {
@@ -159,7 +195,7 @@ fitNoDE <- function(data.obs, spikes, spike.conc, use.spikes, CE.range, tau.init
           out <- Estep2ByGene(par = DO.coef,z = data.obs[i, ], sf = est.sf,
                               pi0 = est.pi0[i, cell.type], mu = est.mu[i, cell.type], disp = est.disp[i],
                               k = tau1, b = tau0, GQ.object = gq)
-          data.imp[i, ] <- ifelse(is.na(out$EYZ0E1), data.obs[i, ], out$EYZ0E1)
+          data.imp[i, ] <- ifelse(is.na(out$EYZ0E1) | is.infinite(out$EYZ0E1), data.obs.adj[i, ], out$EYZ0E1)
           PE[i, ] <- 1 - out$PE0Z0
         }
       }
@@ -194,7 +230,6 @@ fitNoDE <- function(data.obs, spikes, spike.conc, use.spikes, CE.range, tau.init
                           0.025, ifelse(est.pi0[i, 1] > 0.99, 0.975, est.pi0[i,1]))
           out <- tryCatch(optim(par = c(log(prop0/(1-prop0)), log(mean(data.imp[i, ], na.rm=T)), rep(0, ncelltype-1), -2),
                                 fn = MstepNB, y = data.imp[i, ], sf = est.sf, status = PE[i, ], ct = cell.type,lower=-30),
-                                #gr = zinbGrad, method = 'L-BFGS-B'),
                           error = function(e) {
                             list(p = c(log(prop0/(1-prop0)), log(mean(data.imp[i, ], na.rm=T)), rep(0, ncelltype-1), -2))
                           })
@@ -207,7 +242,7 @@ fitNoDE <- function(data.obs, spikes, spike.conc, use.spikes, CE.range, tau.init
           } else {
              rho <- 1/(1+exp(-tau0-tau1*log(est.mu[i]*(1-est.pi0[i]))))
              rho <- ifelse(rho<1e-05,1e-05,rho)
-             new.loglik <- -loglI.GQ(p=out$p, z=data.obs[i,], sf = est.sf, XW=XW, DO.par=DO.coef,rho=rho, GQ.object=gq)
+             new.loglik <- -loglI.GQ(p=out$p, z=data.obs[i,], sf = est.sf, XW=XW, CE=CE,rho=rho, GQ.object=gq)
           }
           return(c(new.pi0, new.mu, new.disp, new.loglik))
         } else {
@@ -226,7 +261,6 @@ fitNoDE <- function(data.obs, spikes, spike.conc, use.spikes, CE.range, tau.init
                           0.025, ifelse(est.pi0[i, 1] > 0.99, 0.975, est.pi0[i,1]))
           out <- tryCatch(optim(par = c(log(prop0/(1-prop0)), log(mean(data.imp[i, ], na.rm=T)), rep(0, ncelltype-1), -2),
                                 fn = MstepNB, y = data.imp[i, ], sf = est.sf, status = PE[i, ], ct = cell.type,lower=-30),
-                                #gr = zinbGrad, method = 'L-BFGS-B')
                           error = function(e) {
                             list(p = c(log(prop0/(1-prop0)), log(mean(data.imp[i, ], na.rm=T)), rep(0, ncelltype-1), -2))
                           })
@@ -242,30 +276,22 @@ fitNoDE <- function(data.obs, spikes, spike.conc, use.spikes, CE.range, tau.init
         }
       }
     }
-
     # update tau1 and tau0 when no-spikeins: NOTE this code is not parallelized yet and will only update (k,b) until (k,b) converges
     if(!tau.conv & tau.est=='endo') {
       if(tau.global) {
-        logit.rho <- foreach (i = 1:ngene, .combine = 'rbind', .packages = c('DECENT')) %dopar% {
-          out.rho <- optim(p=-2,fn=update.rho,x=data.obs[i,],sf=est.sf,size=mean(data.imp2[i,],na.rm=T),CE=CE,method='Brent',upper=10,lower=-10)
-          out.rho$p
-        }
-        data.rho <- data.frame(y=logit.rho,x=log(rowMeans(data.imp2,na.rm=T)),w=rowMeans(data.imp2,na.rm=T))
-        rho.model <- glm(y ~ x,data=data.rho)
-        # weighted est is better when number of genes is small
-        if(ngene<=5000) 
-          rho.model <- glm(y ~ x,weights=w, data=data.rho)
-
-        tau.old    <- c(tau0, tau1)
-        tau.new    <- coef(rho.model)
+        tau.old <- c(tau0,tau1)
+        size.bb <- data.imp2
+        size.bb[which(is.na(size.bb) | is.infinite(size.bb))] <- data.obs.adj[which(is.na(size.bb) | is.infinite(size.bb))]
+        CE.mat <- matrix(CE,nrow(data.obs),ncol(data.obs),byrow=TRUE)
+        out.tau <- optim(p=tau.old,fn=update.rho3,z=c(data.obs), size=c(size.bb),CE=c(CE.mat),lower=-11)
+        tau.new <- out.tau$p
         tau0 <- tau.new[1] ; tau1 <- tau.new[2]
         tau.reltol <- sum( abs(tau.old-tau.new)/abs(tau.old) )
         tau.conv   <- ifelse(tau.reltol< 1e-04, TRUE,FALSE)
       } else {
         tau.old <- cbind(tau0,tau1)
         tau.new <- foreach (i = 1:ncell, .combine = 'rbind', .packages = c('DECENT')) %dopar% {
-          #print(i)
-          size.bb <- rowMeans(data.imp2,na.rm=TRUE)*est.sf[i]
+          size.bb <- ifelse(!is.na(data.imp2[,i]) & is.finite(data.imp2[,i]),data.imp2[,i],data.obs.adj[,i])
           out.tau <- optim(p=tau.old[i,],fn=update.rho3,z=data.obs[,i], size=size.bb,CE=rep(CE[i],ngene),lower=-11)
           out.tau$p
         }
@@ -278,7 +304,7 @@ fitNoDE <- function(data.obs, spikes, spike.conc, use.spikes, CE.range, tau.init
     loglik.vec[iter] <- sum(loglik)
     message('EM iteration ', iter, ' finished at ', Sys.time(), '  Log-likelihood: ', loglik.vec[iter])
 
-    if (iter > 5) {
+    if (iter > 1) {
       if ( (loglik.vec[iter] - loglik.vec[iter-1])/abs(loglik.vec[iter-1]) < 1e-03 | iter == maxit ) converge <- TRUE
     }
 

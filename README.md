@@ -4,6 +4,14 @@ Differential Expression with Capture Efficiency adjustmeNT for single-cell RNA-s
 C. Ye, TP. Speed, A. Salim (2017) DECENT: Differential Expression with Capture Efficiency AdjustmeNT for Single-Cell RNA-seq Data. bioRxiv. https://doi.org/10.1101/225177
 
 ## News
+Jun 5, 2019
+* Version 1.0.0 released
+* Improved bound for GQ integration in the E-step and LRT.
+* Improved starting values for EM algorithm.
+* Improved global tau estimation.
+* Other minor changes.
+
+
 Feb 16, 2019
 * Version 0.99.2 released
 * Modified cell-specific tau estimation.
@@ -43,16 +51,40 @@ devtools::install_github("cz-ye/DECENT")
 
 Here we use a simulated dataset for demonstration
 
+
 ```R
 data("sim")
 
+
 # DECENT with spike-ins
-de.table <- decent(data.obs = sim$data.obs, X = ~as.factor(sim$cell.type), use.spikes = T, 
-                   spikes = sim$sp.obs, spike.conc = sim$sp.true)
+de.table <- decent(data.obs = sim$data.obs, # UMI count matrix after quality control
+                                            # at least > 3% non-zero counts for each cell and > 5 non-zero counts for each gene
+                   X = ~as.factor(sim$cell.type), # cell type/group indicator
+                   use.spikes = T, 
+                   spikes = sim$sp.obs, # observed UMI count
+                   spike.conc = sim$sp.true, # nominal molecule count
+                   s.imputed = T, # get single imputation expression matrix
+                   E.imputed = T, # get mean imputation expression matrix
+                   dir = './' # directory to save the fitted models and imputed data matrices.
+                   )
 
 # DECENT without spike-ins
-de.table <- decent(data.obs = sim$data.obs, X = ~as.factor(sim$cell.type))
+de.table <- decent(data.obs = sim$data.obs,
+                   X = ~as.factor(sim$cell.type), 
+                   use.spikes = F,
+                   CE.range = c(0.02, 0.1) # specify the range of the ranked random capture efficiency
+                   )
 
+# DECENT with batch dummy variable
+batch <- rep(1, length(sim$cell.type))
+set.seed(0)
+batch[sample.int(length(sim$cell.type), length(sim$cell.type)/2)] <- 2 # randomly split into 2 batches just for demonstration
+de.table <- decent(data.obs = sim$data.obs, 
+                   X = ~as.factor(sim$cell.type), 
+                   W = ~as.factor(batch),
+                   use.spikes = T,
+                   spikes = sim$sp.obs, spike.conc = sim$sp.true)
+                   
 # Ground truth can be found in the DE.gene vector.
 ```
 The output object of DE model, no-DE model and LRT will be saved in the working directory (```dir``` argument) as ```decent.DE.rds```, ```decent.noDE.rds``` and ```decent.lrt.rds```. A data frame containing the DE results is returned by the function.

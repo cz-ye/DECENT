@@ -35,7 +35,7 @@ decent <- function (data.obs, X, W=NULL, spikes = NULL, spike.conc = NULL, CE.ra
 
   X <- model.matrix(X) 
   if(!is.null(W)) 
-   W <- model.matrix(W)[,-1]
+   W <- model.matrix(W)[,-1, drop = F]
 
   #if (length(unique(cell.type)) != 2) stop('Number of groups (cell types) should be two.')
   if (CE.range[1] < 0 | CE.range[1] > CE.range[2] | CE.range[2] > 1) stop('CE.range invalid.')
