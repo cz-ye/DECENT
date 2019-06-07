@@ -22,7 +22,7 @@ getImputed <- function(data.obs, par.est, sf, CE, XW, tau, parallel = T) {
   DO.coef[, 1] <- log(CE/(1-CE))
   gq <- gauss.quad(16)
   if (parallel) {
-    temp <- foreach (i = 1:ngene, .combine = 'rbind', .packages = c('VGAM', 'DECENT2')) %dopar% {
+    temp <- foreach (i = 1:ngene, .combine = 'rbind', .packages = c('VGAM', 'DECENT')) %dopar% {
       est.pi0 <- exp(par.est[i,1])/(1 + exp(par.est[i,1]))
       est.mu  <- c(exp( XW %*% as.matrix(par.est[i,-c(1,ncol(par.est))]) ) )
       est.disp<- exp(par.est[i,ncol(par.est)])
@@ -78,7 +78,7 @@ getSImputed <- function(data.obs, par.est, sf, CE, XW, tau, parallel = T) {
   DO.coef[, 1] <- log(CE/(1-CE))
 
   if (parallel) {
-    temp <- foreach (i = 1:ngene, .combine = 'rbind', .packages = c('VGAM', 'DECENT2')) %dopar% {
+    temp <- foreach (i = 1:ngene, .combine = 'rbind', .packages = c('VGAM', 'DECENT')) %dopar% {
       est.pi0 <- exp(par.est[i,1])/(1 + exp(par.est[i,1]))
       est.mu  <- c(exp( XW %*% as.matrix(par.est[i,-c(1,ncol(par.est))]) ) * sf)
       est.disp<- exp(par.est[i,ncol(par.est)])
