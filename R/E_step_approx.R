@@ -1,4 +1,4 @@
-#' E-step with Gaussâ€“Legendre quadrature approximation
+#' E-step with Gauss–Legendre quadrature approximation
 #'
 #' Perform E-step for one gene, with GQ approximation
 #'
@@ -24,7 +24,7 @@ Estep2ByGene <- function(par, z, sf, pi0, mu, disp, k, b, GQ.object) {
     # impute for all obs
     EYZ0E1 <- out$EY
 
-  out <- list()
+  out <- list('VY'=out$VY)
   out[['EYZ0E1']] <- EYZ0E1
   out[['PE0Z0']] <- PE0Z0
   return(out)

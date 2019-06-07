@@ -169,6 +169,10 @@ dBBNB <- function(z,pi0,mu,size,CE,rho,GQ.object,EY=FALSE) {
     EY.wt <- out.mat * (1/(out$PZ))
     # impute for all obs
     out[['EY']] <- (1-pi0)*(rowSums(EY.wt*new.nodes) + (a-0.5)*dnbinom2(a-0.5,mu=mu,size=size)*dbetabinom2(z,prob=CE,size=a-0.5,rho=rho)/out$PZ)
+    #calculate var Y
+    EY.sq  <- (1-pi0)*(rowSums(EY.wt*new.nodes^2) + (a-0.5)^2*dnbinom2(a-0.5,mu=mu,size=size)*dbetabinom2(z,prob=CE,size=a-0.5,rho=rho)/out$PZ)
+    out[['VY']] <- EY.sq - out$EY^2
+    out[['VY']] <- ifelse(is.na(out[['VY']]) | is.infinite(out[['VY']]),0,out[['VY']])
   }
  out
 }
