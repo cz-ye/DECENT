@@ -16,15 +16,16 @@ Estep2ByGene <- function(par, z, sf, pi0, mu, disp, k, b, GQ.object) {
     # calc PZ0E1 and EY
     out <- dBBNB(z,pi0=pi0,mu=mu*sf,size=1/disp,CE=1/(1+exp(-par[,1])),rho=rho,GQ.object=GQ.object,EY=TRUE)
     PZ0E1 <- out$PZ
-    PZ0E1[which(PZ0E1 == 0)] <- .Machine$double.xmin
+    PZ0E1 <- ifelse(PZ0E1 == 0, .Machine$double.xmin, PZ0E1)
     PE0   <- pi0 + (1-pi0)*dnbinom(0, mu = mu*sf, size = 1/disp)
     PE0Z0 <- PE0/(PE0 + PZ0E1)
     # for genes with Z>0, probability of 'expressed' is 1
-    PE0Z0[which(z>0)] <- 0
+    PE0Z0[z>0] <- 0
     # impute for all obs
     EYZ0E1 <- out$EY
 
-  out <- list('VY'=out$VY)
+  out <- list()
+  out[['PZ0E1']] <- PZ0E1
   out[['EYZ0E1']] <- EYZ0E1
   out[['PE0Z0']] <- PE0Z0
   return(out)

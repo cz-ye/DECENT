@@ -10,21 +10,16 @@
 #'
 #' @return negative complete data log-likelihood evaluated at the parameter values.
 #'
-MstepNB <- function(p, y, vy, sf, status, ct) {
+MstepNB <- function(p, y, sf, status, ct) {
   #n.ct=max(ct)
-  pi0 <- (1 + exp(-p[1]))^-1
+  pi0 <- exp(p[1]) / (1 + exp(p[1]))
   mu  <- exp(p[2] + p[(ct + 1)] * (ct > 1)) * sf
   size <- exp(-p[length(p)])
   logl <- (1 - status) * dzinb(0, lambda = mu, k = size, omega = pi0, log = TRUE) +
     status * (log(1-pi0) + dnbinom(0, mu = mu, size = size, log = TRUE)) +
-    status * (-Elbeta(y, size,vy=vy)-log(y)) + y * status * log(mu/(mu+size))
-  logl[which(is.na(logl) | !is.finite(logl))] <- -1e+20
+    status * (-lbeta(y, size) - log(y)) + y * status * log(mu/(mu+size))
+  logl <- ifelse(is.na(logl) | !is.finite(logl), -1e+20, logl)
   return(-sum(logl))
-}
-
-
-Elbeta <- function(y,size,vy) {
-  lbeta(y,size) + (trigamma(y)+trigamma(size)-trigamma(y+size))*vy/2
 }
 
 #' Gradient of complete data log-likelihood function for DECENT model
