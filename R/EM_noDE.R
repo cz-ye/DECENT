@@ -249,7 +249,7 @@ fitNoDE <- function(data.obs, spikes, spike.conc, use.spikes, CE.range, tau.init
         size.bb <- data.imp2
         size.bb[which(is.na(size.bb) | is.infinite(size.bb))] <- data.obs.adj[which(is.na(size.bb) | is.infinite(size.bb))]
         CE.mat <- matrix(CE,nrow(data.obs),ncol(data.obs),byrow=TRUE)
-        out.tau <- optim(p=tau.old,fn=update.rho3,z=data.obs, size=size.bb,CE=CE.mat,lower=-11)
+        out.tau <- optim(p=tau.old,fn=update.rho3,z=data.obs, size=size.bb,CE=CE.mat)
         tau.new <- out.tau$p
         tau0 <- tau.new[1] ; tau1 <- tau.new[2]
         tau.reltol <- sum( abs(tau.old-tau.new)/abs(tau.old) )
@@ -258,7 +258,7 @@ fitNoDE <- function(data.obs, spikes, spike.conc, use.spikes, CE.range, tau.init
         tau.old <- cbind(tau0,tau1)
         tau.new <- foreach (i = 1:ncell, .combine = 'rbind', .packages = c('DECENT')) %dopar% {
           size.bb <- ifelse(!is.na(data.imp2[,i]) & is.finite(data.imp2[,i]),data.imp2[,i],data.obs.adj[,i])
-          out.tau <- optim(p=tau.old[i,],fn=update.rho3,z=data.obs[,i], size=size.bb,CE=rep(CE[i],ngene),lower=-11)
+          out.tau <- optim(p=tau.old[i,],fn=update.rho3,z=data.obs[,i], size=size.bb,CE=rep(CE[i],ngene))
           out.tau$p
         }
         tau0 <- tau.new[, 1]; tau1 <- tau.new[, 2]
