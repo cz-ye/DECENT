@@ -170,14 +170,14 @@ fitNoDE <- function(data.obs, spikes, spike.conc, use.spikes, CE.range, tau.init
         temp <- foreach (i = 1:ngene, .combine = 'rbind', .packages = c('DECENT')) %dopar% {
           out <- EstepByGene(par = DO.coef, z = data.obs[i, ], sf = est.sf,
                               pi0 = est.pi0[i, cell.type], mu = est.mu[i, cell.type], disp = est.disp[i])
-          return(c(ifelse(is.na(out$EYZ0E1),data.obs[i, ],out$EYZ0E1), 1 - out$PE0Z0))
+          return(c(ifelse(is.na(out$EYZ0E1) | is.infinite(out$EYZ0E1),data.obs[i, ],out$EYZ0E1), 1 - out$PE0Z0))
         }
       } else {
         temp <- foreach (i = 1:ngene, .combine = 'rbind', .packages = c('MASS','ZIM', 'DECENT')) %dopar% {
           out <- Estep2ByGene(par = DO.coef,z = data.obs[i, ], sf = est.sf,
                               pi0 = est.pi0[i, cell.type], mu = est.mu[i, cell.type], disp = est.disp[i],
                               k = tau1, b = tau0, GQ.object = gq)
-          return(c(ifelse(is.na(out$EYZ0E1),data.obs[i, ],out$EYZ0E1), 1 - out$PE0Z0))
+          return(c(ifelse(is.na(out$EYZ0E1) | is.infinite(out$EYZ0E1),data.obs[i, ],out$EYZ0E1), 1 - out$PE0Z0))
         }
       }
       data.imp <- temp[, 1:ncell]
@@ -189,7 +189,7 @@ fitNoDE <- function(data.obs, spikes, spike.conc, use.spikes, CE.range, tau.init
           # use E-step with expected value evaluated using GQ integral
           out <- EstepByGene(par = DO.coef, z = data.obs[i, ], sf = est.sf,
                              pi0 = est.pi0[i, cell.type], mu = est.mu[i, cell.type], disp = est.disp[i])
-          data.imp[i, ] <- ifelse(is.na(out$EYZ0E1),data.obs[i, ],out$EYZ0E1)
+          data.imp[i, ] <- ifelse(is.na(out$EYZ0E1) | is.infinite(out$EYZ0E1),data.obs[i, ],out$EYZ0E1)
           PE[i, ]<- 1 - out$PE0Z0
         }
       } else {
@@ -197,7 +197,7 @@ fitNoDE <- function(data.obs, spikes, spike.conc, use.spikes, CE.range, tau.init
           out <- Estep2ByGene(par = DO.coef,z = data.obs[i, ], sf = est.sf,
                               pi0 = est.pi0[i, cell.type], mu = est.mu[i, cell.type], disp = est.disp[i],
                               k = tau1, b = tau0, GQ.object = gq)
-          data.imp[i, ] <- ifelse(is.na(out$EYZ0E1), data.obs[i, ], out$EYZ0E1)
+          data.imp[i, ] <- ifelse(is.na(out$EYZ0E1) | is.infinite(out$EYZ0E1), data.obs[i, ], out$EYZ0E1)
           PE[i, ] <- 1 - out$PE0Z0
         }
       }
