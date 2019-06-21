@@ -4,7 +4,7 @@ Differential Expression with Capture Efficiency adjustmeNT for single-cell RNA-s
 C. Ye, TP. Speed, A. Salim (2018) DECENT: Differential Expression with Capture Efficiency AdjustmeNT for Single-Cell RNA-seq Data. bioRxiv. https://doi.org/10.1101/225177
 
 ## News
-Jun 5, 2019
+Jun 21, 2019
 * Version 1.1.0 released
 * Improved starting values for EM algorithm.
 * Reduced memory requirement for single imputation function.
