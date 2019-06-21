@@ -162,6 +162,9 @@ loglI.GQ <- function(p, z, sf, XW, DO.par,rho, GQ.object) {
 dBBNB <- function(z,pi0,mu,size,CE,rho,GQ.object,EY=FALSE) {
   a <- pmax.int(z+0.5,1.5)
   b <- pmax.int(a+1,qzinb(1-0.0001,omega=pi0,lambda=mu,k=size) + 0.5)
+  rho[which(rho>0.999)] <- 0.999
+  pi0[which(pi0< 1e-04)]<- 1e-04
+  pi0[which(pi0> 0.999)]<- 0.999
   new.nodes <- outer((b-a)/2,GQ.object$nodes,'*') + (a+b)/2
   new.weight<- outer((b-a)/2,GQ.object$weights,'*')
   out.mat <- dnbinom2(new.nodes,mu=mu,size=size)*dbetabinom2(z,prob=CE,size=new.nodes,rho=rho)*new.weight
@@ -171,7 +174,9 @@ dBBNB <- function(z,pi0,mu,size,CE,rho,GQ.object,EY=FALSE) {
     out[['PZ']] <- (1-pi0)*(rowSums(out.mat) + dnbinom2(a-0.5,mu=mu,size=size)*dbetabinom2(z,prob=CE,size=a-0.5,rho=rho))
     EY.wt <- out.mat * (1/(out$PZ))
     # impute for all obs
-    out[['EY']] <- (1-pi0)*(rowSums(EY.wt*new.nodes) + (a-0.5)*dnbinom2(a-0.5,mu=mu,size=size)*dbetabinom2(z,prob=CE,size=a-0.5,rho=rho)/out$PZ)
+    EY  <- (1-pi0)*(rowSums(EY.wt*new.nodes) + (a-0.5)*dnbinom2(a-0.5,mu=mu,size=size)*dbetabinom2(z,prob=CE,size=a-0.5,rho=rho)/out$PZ)
+    EY[which(out$PZ==0)] <- .Machine$double.xmin
+    out[['EY']] <- EY
   }
  out
 }
@@ -180,14 +185,23 @@ dBBNB <- function(z,pi0,mu,size,CE,rho,GQ.object,EY=FALSE) {
 #'
 SImputeByGene <- function(par,z, pi0,mu,sf,disp,k,b,M=1) {
   rho <- 1/(1+exp(-k*log((1-pi0)*mu/sf)-b))
-  y <- 0:max(2, qnbinom(0.999, mu = max(mu), size = 1/disp))
-  DO.prob <- apply(as.matrix(cbind(z, par, rho)), 1, calcDOProb, y = y)
-  NB.prob <- t(apply(as.matrix(y), 1, calcNBProb, mu = mu, size = 1/disp))
-  NB.prob <- NB.prob %*% diag(1-pi0)
-  NB.prob[which(y==0),] <- NB.prob[which(y==0),] + pi0
-  post.prob <- DO.prob*NB.prob
-  out <- c(apply(post.prob,2,draw.sample))
-  out
+  pi0[which(pi0>0.999)] <- 0.999
+  rho[which(rho>0.999)] <- 0.999
+  ncell <- length(z)
+  z.imp <- z
+  for(iter in 1:ncell) {
+   y <- z[iter]:pmax(z[iter]+1, ZIM::qzinb(0.999, omega=pi0[iter],lambda = mu[iter], k = 1/disp))
+   DO.prob <- calcDOProb(x=c(z[iter],par[iter,],rho[iter]), y = y)
+   NB.prob <- calcZINBProb(y, pi0=pi0[iter], mu = mu[iter], size = 1/disp)
+   lpost.prob <- c(scale(DO.prob+NB.prob,scale=FALSE))
+   post.prob  <- exp(lpost.prob)
+   post.prob  <- post.prob/sum(post.prob,na.rm=T)
+   y  <- y[which(! (is.na(post.prob) | is.infinite(post.prob)))]
+   post.prob <- post.prob[which(! (is.na(post.prob) | is.infinite(post.prob)))]
+   if(any(post.prob>0) & length(post.prob)>0) z.imp[iter]  <- sample(y,prob=post.prob,size=M)
+   
+ }
+ z.imp
 }
 
 #' Draw one sample from the given distribution

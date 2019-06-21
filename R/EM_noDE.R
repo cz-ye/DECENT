@@ -57,7 +57,7 @@ fitNoDE <- function(data.obs, spikes, spike.conc, use.spikes, CE.range, tau.init
   }
 
   # Initialize size factor
-  data.obs.adj <- data.obs %*% diag(1/CE)
+  data.obs.adj <- sweep(data.obs,2,CE,'/')
   est.sf <- apply(data.obs.adj, 2, mean, trim = 0.025)
   est.sf <- est.sf/mean(est.sf)
 
@@ -74,7 +74,7 @@ fitNoDE <- function(data.obs, spikes, spike.conc, use.spikes, CE.range, tau.init
 
   est.mu <- matrix(0, ngene, ncelltype)
   # start with est.mu close to method of moments estimate
-  est.mu[, 1] <- rowMeans( data.obs.adj %*% diag(1/est.sf) )/(1-est.pi0[,1])
+  est.mu[, 1] <- rowMeans( sweep(data.obs.adj,2, est.sf, '/' ))/(1-est.pi0[,1])
 
   #....new block of codes, june 7 2019 
   # use MoM to get a reasonable starting value

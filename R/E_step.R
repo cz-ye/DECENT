@@ -67,11 +67,11 @@ loglI <- function(p, z, sf, ct, DO.par) {
 #' @import VGAM
 #'
 calcDOProb <- function(x, y) {
-  return(dbetabinom(x[1], prob = exp(x[2] + x[3]*log(y+1))/(1 + exp(x[2] + x[3]*log(y+1))), size = y, log = FALSE, rho = x[4]))
+  return(dbetabinom(x[1], prob = exp(x[2] + x[3]*log(y+1))/(1 + exp(x[2] + x[3]*log(y+1))), size = y, log = TRUE, rho = x[4]))
 }
 
 #' Calculate probability for negative binomial model
 #'
-calcNBProb <- function(y, mu, size) {
-  return(dnbinom(y, mu = mu, size = size))
+calcZINBProb <- function(y, pi0, mu, size) {
+  return(ZIM::dzinb(y,omega=pi0,lambda = mu, k = size,log=TRUE))
 }
