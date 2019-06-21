@@ -1,9 +1,15 @@
 # DECENT
 Differential Expression with Capture Efficiency adjustmeNT for single-cell RNA-seq data
 
-C. Ye, TP. Speed, A. Salim (2017) DECENT: Differential Expression with Capture Efficiency AdjustmeNT for Single-Cell RNA-seq Data. bioRxiv. https://doi.org/10.1101/225177
+C. Ye, TP. Speed, A. Salim (2018) DECENT: Differential Expression with Capture Efficiency AdjustmeNT for Single-Cell RNA-seq Data. bioRxiv. https://doi.org/10.1101/225177
 
 ## News
+Jun 5, 2019
+* Version 1.1.0 released
+* Improved starting values for EM algorithm.
+* Reduced memory requirement for single imputation function.
+* Other minor changes.
+
 Jun 5, 2019
 * Version 1.0.0 released
 * Improved bound for GQ integration in the E-step and LRT.
