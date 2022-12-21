@@ -9,4 +9,9 @@ License: GPL-3
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 6.1.0
+<<<<<<< c441cdfe34d992ee5728035893470846e718ceb4
 Imports: MASS, VGAM, ZIM, doParallel, edgeR, foreach, parallel, statmod
+=======
+biocViews:
+Imports: MASS, VGAM, ZIM, doParallel, edgeR, foreach, parallel, statmod
+>>>>>>> fixed LRT loop issues
