@@ -49,11 +49,7 @@ lrTest <- function(data.obs, out, X, W=NULL, tau, parallel) {
                          warning("Numerical problem in noDE model for gene ", i);
                          NA
                        })
-<<<<<<< c441cdfe34d992ee5728035893470846e718ceb4
-      if(!is.na(res2)) {
-=======
       if(!any(is.na(res2))) {
->>>>>>> fixed LRT loop issues
         res2$par[res2$par < -100] <- -100
         p2.init <- c(res2$p[1:2], rep(0,ncelltype+nW-1),res2$p[ncol(par2)])
       } else {
@@ -67,11 +63,7 @@ lrTest <- function(data.obs, out, X, W=NULL, tau, parallel) {
                          NA
                        })
       message(i)
-<<<<<<< c441cdfe34d992ee5728035893470846e718ceb4
-      if (is.na(res1) & is.na(res2)) {
-=======
       if (any(is.na(res1)) & any(is.na(res2))) {
->>>>>>> fixed LRT loop issues
         return(rep(0, ncol(par1)+ncol(par2)+2))
       } else {
         if (res1$conv > 0) {
@@ -100,11 +92,7 @@ lrTest <- function(data.obs, out, X, W=NULL, tau, parallel) {
                          warning("numerical problem in noDE model for gene ", i);
                          NA
                        })
-<<<<<<< c441cdfe34d992ee5728035893470846e718ceb4
-      if(!is.na(res2)) {
-=======
       if(!any(is.na(res2))) {
->>>>>>> fixed LRT loop issues
         res2$par[res2$par < -100] <- -100
         p2.init <- c(res2$p[1:2], rep(0,ncelltype+nW-1),res2$p[ncol(par2)])
       } else {
@@ -118,11 +106,7 @@ lrTest <- function(data.obs, out, X, W=NULL, tau, parallel) {
                          NA
                        })
       message(i)
-<<<<<<< c441cdfe34d992ee5728035893470846e718ceb4
-      if (is.na(res1) | is.na(res2)) {
-=======
       if (any(is.na(res1)) | any(is.na(res2))) {
->>>>>>> fixed LRT loop issues
       } else {
         if (res1$conv > 0) {
           warning("DE model failed to converge for gene ", i)
